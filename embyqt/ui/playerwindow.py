@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 import time
 from typing import List, Optional
@@ -27,6 +28,7 @@ from ..async_task import run_async
 from ..context import AppContext
 from ..logging_setup import get_logger
 from ..player import VLC_AVAILABLE, PlaybackReporter, VlcEngine, ms_to_ticks, vlc_error
+from ..mpv_player import MPV_AVAILABLE, MpvEngine, MpvVideoSurface, mpv_error
 from . import theme
 from .branding import app_icon
 from .frameless import create_resize_handles, position_resize_handles
@@ -57,6 +59,20 @@ def _fmt(ms: int) -> str:
     if hours:
         return f"{hours}:{minutes:02d}:{seconds:02d}"
     return f"{minutes}:{seconds:02d}"
+
+
+def select_player_backend() -> str:
+    """选择播放内核：mpv（默认）或 vlc。"""
+    pref = os.environ.get("EMBYQT_PLAYER", "mpv").strip().lower()
+    if pref not in ("mpv", "vlc"):
+        pref = "mpv"
+    if pref == "mpv" and MPV_AVAILABLE:
+        return "mpv"
+    if VLC_AVAILABLE:
+        return "vlc"
+    if MPV_AVAILABLE:
+        return "mpv"
+    return ""
 
 
 def native_video_platform() -> bool:
@@ -118,6 +134,9 @@ class VideoSurface(QWidget):
         self._frame = None
         self._frame_bytes = None
         self.update()
+
+    def has_frame(self) -> bool:
+        return self._frame is not None
 
     def set_corner_radius(self, radius: int) -> None:
         self._corner_radius = int(radius)
@@ -724,7 +743,10 @@ class PlayerWindow(QWidget):
         self.ctx = ctx
         self.media_source_id = media_source_id or ""
         self._has_system_proxy = False
-        self._native_video = native_video_platform()
+        self._backend = select_player_backend()
+        self._native_video = (
+            self._backend == "vlc" and native_video_platform()
+        )
         self._vmem_connected = False
         self.item = item
         self.start_ticks = int(start_ticks or 0)
@@ -742,7 +764,7 @@ class PlayerWindow(QWidget):
         self._media_source: Optional[dict] = None
         self._play_session_id = ""
         self._reporter: Optional[PlaybackReporter] = None
-        self._engine: Optional[VlcEngine] = None
+        self._engine = None
         self._duration_ms = 0
         self._seeking = False
         self._muted = False
@@ -805,7 +827,10 @@ class PlayerWindow(QWidget):
         root.addWidget(self.container, 1)
         self._handles = create_resize_handles(self)
 
-        self.video = VideoSurface(self.container, native=self._native_video)
+        if self._backend == "mpv":
+            self.video = MpvVideoSurface(self.container)
+        else:
+            self.video = VideoSurface(self.container, native=self._native_video)
         self.pause_overlay = PauseOverlay(self.container)
         self.pause_overlay.hide()
         self.loading_overlay = LoadingOverlay(self.container)
@@ -978,6 +1003,8 @@ class PlayerWindow(QWidget):
         self._loading = True
         self._load_seq += 1
         self.controls.seek.setValue(0)
+        if hasattr(self, "video"):
+            self.video.clear_frame()
         seq = self._load_seq
         self.status_label.hide()
         self._playback_started = False
@@ -1043,33 +1070,55 @@ class PlayerWindow(QWidget):
         self._play_session_id = info.get("PlaySessionId") or ""
         media_source_id = source.get("Id") or ""
 
-        if not VLC_AVAILABLE:
-            self._on_error(f"缺少 libVLC：{vlc_error()}")
-            return
-
-        if self._engine is None:
-            try:
-                self._engine = VlcEngine(self)
-            except Exception as exc:  # noqa: BLE001
-                self._on_error(str(exc))
+        if self._backend == "mpv":
+            if not MPV_AVAILABLE:
+                self._on_error(f"缺少 libmpv：{mpv_error()}")
                 return
-            self._engine.ended.connect(self._on_ended, Qt.ConnectionType.QueuedConnection)
-            self._engine.failed.connect(self._on_media_failed, Qt.ConnectionType.QueuedConnection)
-            self._engine.set_volume(self.volume)
-            self._engine.set_mute(self._muted)
-        if self._native_video:
-            self._engine.attach(int(self.video.winId()))
+            if self._engine is None:
+                try:
+                    self._engine = MpvEngine(self)
+                except Exception as exc:  # noqa: BLE001
+                    self._on_error(str(exc))
+                    return
+                self._engine.ended.connect(
+                    self._on_ended, Qt.ConnectionType.QueuedConnection
+                )
+                self._engine.failed.connect(
+                    self._on_media_failed, Qt.ConnectionType.QueuedConnection
+                )
+                self._engine.set_volume(self.volume)
+                self._engine.set_mute(self._muted)
+            self.video.bind_engine(self._engine)
+        elif self._backend == "vlc":
+            if not VLC_AVAILABLE:
+                self._on_error(f"缺少 libVLC：{vlc_error()}")
+                return
+            if self._engine is None:
+                try:
+                    self._engine = VlcEngine(self)
+                except Exception as exc:  # noqa: BLE001
+                    self._on_error(str(exc))
+                    return
+                self._engine.ended.connect(self._on_ended, Qt.ConnectionType.QueuedConnection)
+                self._engine.failed.connect(self._on_media_failed, Qt.ConnectionType.QueuedConnection)
+                self._engine.set_volume(self.volume)
+                self._engine.set_mute(self._muted)
+            if self._native_video:
+                self._engine.attach(int(self.video.winId()))
+            else:
+                width, height = _target_video_size(source)
+                self._engine.attach_vmem(width, height)
+                if not self._vmem_connected:
+                    self._engine.frame_ready.connect(
+                        self.video.set_frame, Qt.ConnectionType.QueuedConnection
+                    )
+                    self._engine.frame_ready.connect(
+                        self._on_frame_ready, Qt.ConnectionType.QueuedConnection
+                    )
+                    self._vmem_connected = True
         else:
-            width, height = _target_video_size(source)
-            self._engine.attach_vmem(width, height)
-            if not self._vmem_connected:
-                self._engine.frame_ready.connect(
-                    self.video.set_frame, Qt.ConnectionType.QueuedConnection
-                )
-                self._engine.frame_ready.connect(
-                    self._on_frame_ready, Qt.ConnectionType.QueuedConnection
-                )
-                self._vmem_connected = True
+            self._on_error("没有可用的播放内核（libmpv / libVLC 均不可用）")
+            return
 
         self._reporter = PlaybackReporter(
             self.ctx.client,
@@ -1195,7 +1244,7 @@ class PlayerWindow(QWidget):
             if self._native_video or not self._has_video:
                 started = self._engine.is_playing() or time_ms > 0
             else:
-                started = self.video._frame is not None
+                started = self.video.has_frame()
                 if (
                     not started
                     and time_ms > 0
@@ -1221,8 +1270,29 @@ class PlayerWindow(QWidget):
             if self._reporter is not None:
                 self._reporter.progress(ms_to_ticks(time_ms), volume=self.volume)
 
+    @staticmethod
+    def _buffer_text(ahead_ms: int) -> str:
+        ahead = max(0.0, ahead_ms / 1000.0)
+        if ahead >= 60:
+            return f"缓冲 {int(ahead // 60)}:{int(ahead % 60):02d}"
+        if ahead >= 0.5:
+            return f"缓冲 {ahead:.1f}s"
+        return ""
+
     def _update_buffer(self) -> None:
-        if not self._using_proxy or self._duration_ms <= 0:
+        if self._duration_ms <= 0 or self._engine is None:
+            self.controls.seek.clear_buffered()
+            self.controls.set_buffer("")
+            return
+        if self._backend == "mpv":
+            ahead_ms = self._engine.buffer_ahead_ms()
+            played = self.controls.seek.value() / 10.0
+            end = min(100.0, played + ahead_ms / self._duration_ms * 100.0)
+            ranges = [(played, end)] if end > played else []
+            self.controls.seek.set_buffered_ranges(ranges)
+            self.controls.set_buffer(self._buffer_text(ahead_ms))
+            return
+        if not self._using_proxy:
             self.controls.seek.clear_buffered()
             self.controls.set_buffer("")
             return
@@ -1236,14 +1306,8 @@ class PlayerWindow(QWidget):
             if start <= played + 0.5 and end > played
         ]
         end = max(containing, default=played)
-        ahead = self._duration_ms * max(0.0, end - played) / 100.0 / 1000.0
-        if ahead >= 60:
-            text = f"缓冲 {int(ahead // 60)}:{int(ahead % 60):02d}"
-        elif ahead >= 0.5:
-            text = f"缓冲 {ahead:.1f}s"
-        else:
-            text = ""
-        self.controls.set_buffer(text)
+        ahead = int(self._duration_ms * max(0.0, end - played) / 100.0)
+        self.controls.set_buffer(self._buffer_text(ahead))
 
     def _on_frame_ready(self, _data=None, _width=None, _height=None, _pitch=None) -> None:
         if not self._playback_started:
@@ -1325,7 +1389,10 @@ class PlayerWindow(QWidget):
             if self._duration_ms > 0
             else None
         )
-        if self._using_proxy and ratio is not None:
+        if self._backend == "mpv":
+            self.controls.seek.clear_buffered()
+            self.controls.set_buffer("")
+        elif self._using_proxy and ratio is not None:
             buffered = self.ctx.proxy.begin_seek(
                 self.item.get("Id", ""), ratio * 100.0
             )
@@ -1634,6 +1701,8 @@ class PlayerWindow(QWidget):
             )
             self._reporter.shutdown()
             self._reporter = None
+        if hasattr(self.video, "cleanup"):
+            self.video.cleanup()
         if self._engine is not None:
             self._engine.release()
             self._engine = None

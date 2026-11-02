@@ -104,7 +104,7 @@ ui:    theme / icons / branding / titlebar / frameless / widgets
 
 ### `embyqt/streamproxy.py`
 
-- `StreamProxy`：在 `127.0.0.1:随机端口` 起线程 HTTP 服务，供 libVLC 播放/字幕。
+- `StreamProxy`：在 `127.0.0.1:随机端口` 起线程 HTTP 服务，供 libmpv/libVLC 播放/字幕和网速统计。
 - `media_url()` / `subtitle_url()`：本机 URL；
 - `begin_playback/begin_request/add_progress/set_progress_total/bytes_for/windows_for/begin_seek()`：
   每个 Range 请求保留一个窗口（start/sent），`windows_for()` 返回合并后的缓冲区间；
@@ -132,7 +132,9 @@ ui:    theme / icons / branding / titlebar / frameless / widgets
 
 ### `embyqt/player.py`
 
-- `VlcEngine`：libVLC 封装。
+- `MpvEngine`（`embyqt/mpv_player.py`）：默认内核，libmpv + Qt QOpenGLWidget render API；
+  缓冲读取 `demuxer-cache-time`，`cache-secs` 默认 60 秒。
+- `VlcEngine`：libVLC 回退封装。
   - 事件：`ended`、`failed(str)`、`frame_ready(bytes,w,h,pitch)`；
   - 渲染：`attach(win_id)`（X11 `set_xwindow` / macOS `set_nsobject` / Windows `set_hwnd`；macOS 实际走 vmem）、
     `attach_vmem(w,h)`（Wayland 内存回调）；
@@ -333,7 +335,8 @@ ui:    theme / icons / branding / titlebar / frameless / widgets
 最大的 UI 文件，包含：
 
 - `VideoSurface`：
-  - `native`（X11/Windows 原生）或 vmem（Wayland/macOS）；原生窗口底部让出 20px 由控制栏覆盖；
+  - libVLC 回退路径：`native`（X11/Windows 原生）或 vmem（Wayland/macOS）；
+  - libmpv 路径：`MpvVideoSurface`（QOpenGLWidget）通过 render API 绘制，所有平台统一；
   - `paintEvent` 画帧 + 底部圆角裁剪；所有模式都用 mask 裁底部圆角（比控制栏大 4px），避免黑边；
   - 鼠标单击（带横向位置比例，220ms 延迟以区分双击）/双击/移动信号。
 - `ProgressSlider`：自绘进度条（轨道/缓冲/手柄/已播放颜色均读取当前主题）；

@@ -5,14 +5,14 @@
 
 ## 1. 项目一句话
 
-Emby 桌面客户端（PySide6 + libVLC），服务器只允许 DirectPlay 且按客户端名白名单，
+Emby 桌面客户端（PySide6 + libmpv，libVLC 回退），服务器只允许 DirectPlay 且按客户端名白名单，
 所有请求必须带 `X-Emby-Authorization`；UI 为无边框 16px 圆角，播放器全局唯一。
 
 ## 2. 不可破坏的不变式
 
 1. **认证头**：所有 Emby 请求走 `EmbyClient._request`，带
    `X-Emby-Authorization`（`CLIENT_NAME="Emby for Android"`）。
-   不要改成 `?api_key=` 直连；libVLC 必须经 `StreamProxy`。
+   不要改成 `?api_key=` 直连；播放内核必须经 `StreamProxy`。
 2. **只 DirectPlay**：不要加转码/Remux/下载请求；`device_profile()` 的
    `TranscodingProfiles` 必须保持空。
 3. **代理统一**：所有出站请求用 `ProxyManager`（`proxies_for(url)`），
@@ -56,7 +56,8 @@ main.py
 | Emby 接口 | `embyqt/api.py` |
 | 播放流本地代理/网速统计 | `embyqt/streamproxy.py` |
 | 图片加载/缓存 | `embyqt/imagecache.py` |
-| libVLC 封装/上报 | `embyqt/player.py` |
+| libmpv 封装/渲染 | `embyqt/mpv_player.py` |
+| libVLC 回退/上报 | `embyqt/player.py` |
 | 异步任务 | `embyqt/async_task.py` |
 | 依赖容器 | `embyqt/context.py` |
 | 主题/QSS/颜色 | `embyqt/ui/theme.py` |

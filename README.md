@@ -1,6 +1,6 @@
 # EmbyQt —— Emby 桌面客户端
 
-基于 Emby REST API 的 Linux 桌面客户端，PySide6（Qt 6）+ libVLC。
+基于 Emby REST API 的 Linux 桌面客户端，PySide6（Qt 6）+ libmpv（保留 libVLC 回退）。
 界面为深色媒体中心风格：侧边栏媒体库、海报墙、详情页、内嵌播放器。
 
 > 项目架构、模块说明、维护与 AI 协作文档见 **[docs/README.md](docs/README.md)**。
@@ -34,8 +34,8 @@
 
 2. **账号禁止转码 —— 只能 DirectPlay**
    - `POST /Items/{id}/PlaybackInfo` 返回 `SupportsTranscoding=false`，只有直连/直连串流可用。
-   - 播放器因此不做任何转码请求，直接以 HTTP Range 拉取原文件字节，交给 libVLC 解码。
-   - 目录里以 H.264/HEVC + AAC/EAC3 为主，VLC 可软解；极端编码（如缺少解码器）无法播放属预期。
+   - 播放器因此不做任何转码请求，直接以 HTTP Range 拉取原文件字节，交给 libmpv 解码。
+   - 目录里以 H.264/HEVC + AAC/EAC3 为主，libmpv 可软解；极端编码（如缺少解码器）无法播放属预期。
 
 3. **媒体流的鉴权方式**
    - 实测 `GET /Videos/{id}/stream?static=true&MediaSourceId=…&api_key=…` 支持 `Range`（206），
@@ -75,7 +75,8 @@
 - **无边框窗口**：隐藏系统标题栏，使用自绘标题栏（可拖动、双击最大化、最小化/关闭/最大化），
   窗口四角统一为 **16px 圆角**；最大化/全屏时自动切平角并铺满屏幕。主窗口、登录框和播放器统一风格，
   播放器窗口化时视频底部按 16px 圆角裁剪。
-- **播放**：libVLC 内嵌播放，直连播放原文件，断线自动回退代理；支持进度条拖动、±10 秒、
+- **播放**：libmpv 默认播放内核（Wayland 使用 Qt OpenGL render API），libVLC 作为回退；
+  直连播放原文件，断线自动回退代理；支持进度条拖动、±10 秒、
   音量/静音、音轨切换、内嵌/外挂字幕选择、全屏、剧集自动连播；进度条支持点击/拖动定位，并用灰色区间显示网络缓冲位置；跳转到未缓冲位置后缓冲区间会从新位置重新统计；单击视频画面暂停/继续，双击全屏。
   控制栏使用 Material Symbols 图标并跟随深/浅色主题；加载中显示转圈和实时网速，音量图标悬停弹出音量滑条，音量右侧显示带图标的实时网速；暂停时画面正中显示半透明暂停图标；
   标题栏提供窗口最大化；片名与关闭按钮已移除（关闭走标题栏）。
@@ -127,8 +128,8 @@
 - 目录版：`dist/EmbyQt/EmbyQt`
 - 单文件：`dist/EmbyQt`
 
-默认会自动查找系统 `libvlc.so.5`、`libvlccore.so.9` 和 VLC plugins 并打入产物；
-`--system-vlc` 可显著减小体积，但运行环境需安装 VLC/libVLC。
+默认会自动查找系统 `libvlc.so.5`、`libvlccore.so.9`、VLC plugins 和 `libmpv.so.2` 并打入产物；
+`--system-vlc` 可减小 VLC 部分体积，但运行环境需安装 VLC/libVLC。
 
 ### 桌面启动器
 
@@ -149,7 +150,8 @@ sudo update-desktop-database /usr/share/applications
 
 ## 三、安装与运行
 
-系统依赖：Python 3.10+、libVLC 3（Ubuntu/Debian 包名 `vlc` 或 `libvlc5`）、
+系统依赖：Python 3.10+、libmpv（Ubuntu/Debian 包名 `libmpv2`）、
+libVLC 3（回退用，包名 `vlc` 或 `libvlc5`）、
 Qt 的 xcb 后端（`libxcb-cursor0`，仓库 `vendor/lib` 已附带一份备用的
 `libxcb-cursor.so.0`，`run.sh` 会自动加入 `LD_LIBRARY_PATH`）。
 
@@ -198,7 +200,8 @@ embyqt/
 ├── api.py           # Emby REST 封装（认证、媒体库、播放上报、直连地址）
 ├── streamproxy.py   # 本机回环流代理（注入认证头，作为直连兜底 / 外挂字幕）
 ├── net.py           # 系统代理探测（EMBYQT_PROXY / 环境变量 / macOS scutil / GNOME/KDE）
-├── player.py        # libVLC 封装 + 后台播放上报队列
+├── player.py        # libVLC 回退封装 + 后台播放上报队列
+├── mpv_player.py    # libmpv 内核 + Qt OpenGL render API
 ├── config.py        # QSettings 登录态与偏好
 ├── context.py       # 全局上下文：客户端、代理、图片加载器
 ├── imagecache.py    # 异步图片加载、圆角处理、内存 LRU + 磁盘缓存
@@ -241,7 +244,7 @@ embyqt/
     由 Qt 在窗口内绘制，仍是单窗口体验，控制栏用普通子控件覆盖。
   - Linux 下绝不能用 `set_hwnd`（Windows 路径），它会在 X11 上把 vout 置为 `none`，
     表现为「有进度有声音、没有画面」。
-- **播放中断保护**：VLC 把网络中断当作「播放结束」，客户端用最后播放位置判断，
+- **播放中断保护**：使用最后播放位置判断异常结束，
   距结尾不足 92% 时视为异常，自动尝试代理重连而不是退出。
 
 ## 五、测试

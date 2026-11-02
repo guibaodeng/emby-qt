@@ -95,6 +95,8 @@ elif [[ "$VLC_MODE" == "auto" && -n "$VLC_LIB" && -n "$VLC_CORE" && -n "$VLC_PLU
     BUNDLE_VLC=1
 fi
 
+MPV_LIB="$(find_lib libmpv.so.2 || true)"
+
 if [[ "$BUNDLE_VLC" == "0" ]]; then
     echo "==> 不打包 libVLC：运行环境必须已安装 VLC/libVLC"
     if ! "$PY" -c "import vlc" >/dev/null 2>&1; then
@@ -121,6 +123,7 @@ ARGS=(
     --workpath "$BUILD/pyinstaller"
     --specpath "$BUILD"
     --hidden-import vlc
+    --hidden-import mpv
     --hidden-import PySide6.QtSvg
     --add-data "$ROOT/embyqt/assets:embyqt/assets"
 )
@@ -165,6 +168,35 @@ PYHOOK
         --add-data "$BUILD/vlc/plugins:vlc/plugins"
         --runtime-hook "$BUILD/vlc/runtime/vlc_runtime.py"
     )
+fi
+
+if [[ -n "$MPV_LIB" ]]; then
+    echo "==> 打包 libmpv：$MPV_LIB"
+    mkdir -p "$BUILD/mpv"
+    cp -L "$MPV_LIB" "$BUILD/mpv/libmpv.so.2"
+    cat > "$BUILD/mpv/mpv_runtime.py" <<'PYHOOK_MPV'
+import ctypes.util
+import os
+import sys
+
+base = getattr(sys, "_MEIPASS", os.path.dirname(sys.executable))
+lib = os.path.join(base, "libmpv.so.2")
+if os.path.exists(lib):
+    _orig = ctypes.util.find_library
+
+    def _find(name):
+        if name == "mpv":
+            return lib
+        return _orig(name)
+
+    ctypes.util.find_library = _find
+PYHOOK_MPV
+    ARGS+=(
+        --add-binary "$BUILD/mpv/libmpv.so.2:."
+        --runtime-hook "$BUILD/mpv/mpv_runtime.py"
+    )
+else
+    echo "==> 未找到 libmpv，打包产物将只能回退 VLC"
 fi
 
 echo "==> 开始打包（$MODE）"

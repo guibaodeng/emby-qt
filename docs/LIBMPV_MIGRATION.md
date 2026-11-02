@@ -64,6 +64,7 @@ buffer_ahead_ms / attach / attach_vmem / frame_ready
 4. 缓冲显示接入 mpv cache 属性；
 5. 打包脚本加入 libmpv 与 python-mpv，保留 VLC 回退。
 
-## 当前阻塞
+## 当前状态
 
-当前工作环境没有系统 libmpv，且沙箱禁止 sudo，无法完成运行验证。需要先执行上面的系统安装命令。
+已安装 libmpv，并完成 MpvEngine、Qt OpenGL render API、播放/seek/缓冲显示接入；
+libVLC 仍可通过 `EMBYQT_PLAYER=vlc` 回退。

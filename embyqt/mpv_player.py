@@ -58,6 +58,9 @@ class MpvEngine(QObject):
             input_vo_keyboard=False,
             cache="yes",
             cache_secs=60,
+            cache_pause=True,
+            cache_pause_wait=5,
+            cache_pause_initial=True,
             demuxer_max_bytes=512 * 1024 * 1024,
             demuxer_readahead_secs=60,
             network_timeout=30,
@@ -173,16 +176,71 @@ class MpvEngine(QObject):
     def set_mute(self, muted: bool) -> None:
         self._mpv.mute = bool(muted)
 
-    def buffer_ahead_ms(self) -> int:
-        """当前播放位置前方的 demuxer cache 时长。"""
+    def cache_buffering_state(self) -> int:
+        """libmpv 的 cache-buffering-state（0–100）。"""
         try:
-            pos = self._mpv.time_pos
-            end = self._mpv.demuxer_cache_time
-            if pos is not None and end is not None and end > pos:
-                return int((end - pos) * 1000)
+            value = self._mpv.cache_buffering_state
+            if value is not None:
+                return max(0, min(100, int(value)))
         except Exception:  # noqa: BLE001
             pass
         return 0
+
+    def paused_for_cache(self) -> bool:
+        """缓存不足导致自动暂停。"""
+        try:
+            return bool(self._mpv.paused_for_cache)
+        except Exception:  # noqa: BLE001
+            return False
+
+    def buffer_ahead_ms(self) -> int:
+        """libmpv 的 demuxer-cache-duration（当前缓存时长，秒）。"""
+        try:
+            value = self._mpv.demuxer_cache_duration
+            if value is not None:
+                return int(max(0.0, float(value)) * 1000)
+            state = self._mpv.demuxer_cache_state or {}
+            value = state.get("cache-duration")
+            if value is not None:
+                return int(max(0.0, float(value)) * 1000)
+        except Exception:  # noqa: BLE001
+            pass
+        return 0
+
+    def buffered_ranges(self) -> List[tuple]:
+        """直接读取 demuxer-cache-state 的 seekable-ranges，转成百分比区间。"""
+        try:
+            state = self._mpv.demuxer_cache_state or {}
+            duration = self._mpv.duration
+            if not duration or duration <= 0:
+                return []
+            out = []
+            for item in state.get("seekable-ranges") or []:
+                start = max(0.0, float(item.get("start", 0.0)))
+                end = max(0.0, float(item.get("end", 0.0)))
+                if end <= start:
+                    continue
+                out.append(
+                    (
+                        min(100.0, start * 100.0 / duration),
+                        min(100.0, end * 100.0 / duration),
+                    )
+                )
+            if not out:
+                # HTTP 流在早期可能还没有 seekable-ranges，
+                # 用 API 的 cache-end 和当前播放位置兜底。
+                end = state.get("cache-end")
+                start = self._mpv.time_pos
+                if end is not None and start is not None and float(end) > float(start):
+                    out.append(
+                        (
+                            min(100.0, float(start) * 100.0 / duration),
+                            min(100.0, float(end) * 100.0 / duration),
+                        )
+                    )
+            return out
+        except Exception:  # noqa: BLE001
+            return []
 
     # ---- 轨道 -----------------------------------------------------------
     def _tracks(self, kind: str) -> List[tuple]:

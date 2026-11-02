@@ -1264,6 +1264,14 @@ class PlayerWindow(QWidget):
         ):
             self.status_label.hide()
 
+        if self._backend == "mpv" and self._engine is not None:
+            if self._engine.paused_for_cache() and not self._error_shown:
+                self.status_label.setText("缓冲中…")
+                self.status_label.show()
+                self.status_label.raise_()
+            elif self.status_label.text() == "缓冲中…":
+                self.status_label.hide()
+
         self._last_position_ms = time_ms
         if time_ms - self._last_report_ms >= 10_000 and time_ms > 0:
             self._last_report_ms = time_ms
@@ -1285,12 +1293,17 @@ class PlayerWindow(QWidget):
             self.controls.set_buffer("")
             return
         if self._backend == "mpv":
-            ahead_ms = self._engine.buffer_ahead_ms()
-            played = self.controls.seek.value() / 10.0
-            end = min(100.0, played + ahead_ms / self._duration_ms * 100.0)
-            ranges = [(played, end)] if end > played else []
+            # 直接使用 libmpv 的缓存 API：
+            # seekable-ranges 给出已缓存区间，cache-buffering-state 给出缓存百分比，
+            # demuxer-cache-duration 给出缓存时长。
+            ranges = self._engine.buffered_ranges()
             self.controls.seek.set_buffered_ranges(ranges)
-            self.controls.set_buffer(self._buffer_text(ahead_ms))
+            state = self._engine.cache_buffering_state()
+            ahead = self._engine.buffer_ahead_ms()
+            parts = [f"{state}%"]
+            if ahead >= 500:
+                parts.append(self._buffer_text(ahead).replace("缓冲 ", ""))
+            self.controls.set_buffer("缓冲 " + " · ".join(parts))
             return
         if not self._using_proxy:
             self.controls.seek.clear_buffered()

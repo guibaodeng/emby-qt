@@ -67,4 +67,5 @@ buffer_ahead_ms / attach / attach_vmem / frame_ready
 ## 当前状态
 
 已安装 libmpv，并完成 MpvEngine、Qt OpenGL render API、播放/seek/缓冲显示接入；
+缓冲直接使用 `cache-buffering-state`、`paused-for-cache`、`demuxer-cache-duration` 和 `demuxer-cache-state`；
 libVLC 仍可通过 `EMBYQT_PLAYER=vlc` 回退。

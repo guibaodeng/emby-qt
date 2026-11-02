@@ -402,3 +402,14 @@ MainWindow
 3. 如果影响启动/数据流，更新 `docs/PROJECT.md`；
 4. 如果影响 AI 改代码方式，更新 `docs/LLM_GUIDE.md`；
 5. 加测试（纯逻辑放 `tests/`）。
+
+
+### libmpv 缓冲 API
+
+- `cache-buffering-state`：0–100 缓冲百分比；
+- `paused-for-cache`：是否因缓存不足暂停；
+- `demuxer-cache-duration`：当前缓存时长（秒）；
+- `demuxer-cache-time`：缓存末端时间戳；
+- `demuxer-cache-state.seekable-ranges`：可 seek 缓存区间，用于进度条灰色段；
+- `cache-pause` / `cache-pause-wait` / `cache-pause-initial`：缓存不足自动暂停策略；
+- `demuxer-readahead-secs`：预读时长。

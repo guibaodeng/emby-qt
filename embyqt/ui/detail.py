@@ -119,7 +119,7 @@ def source_label(source: dict) -> str:
 
 
 class DetailHeader(QWidget):
-    play_requested = Signal(int)   # start ticks
+    play_requested = Signal(object)   # start ticks；PySide int 仅 32 位，ticks 可能溢出
     favorite_requested = Signal()
     played_requested = Signal()
     back_requested = Signal()
@@ -382,7 +382,7 @@ class DetailHeader(QWidget):
 
 class DetailPage(QWidget):
     back_requested = Signal()
-    play_requested = Signal(dict, int)
+    play_requested = Signal(dict, object)
     open_item = Signal(dict)
     state_changed = Signal()
 
@@ -731,7 +731,11 @@ class DetailPage(QWidget):
             if episode is not None:
                 self.play_requested.emit(episode, 0)
             return
-        start = int((self._summary.get("UserData") or {}).get("PlaybackPositionTicks") or 0)
+        start = int(_start or 0)
+        if start <= 0:
+            start = int(
+                (self._summary.get("UserData") or {}).get("PlaybackPositionTicks") or 0
+            )
         if item.get("Id") != self._summary.get("Id"):
             start = 0
         self.play_requested.emit(item, start)

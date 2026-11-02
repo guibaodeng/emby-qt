@@ -8,3 +8,4 @@ __pycache__/
 docs/_*.png
 build/
 dist/
+.local/

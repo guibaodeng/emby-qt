@@ -413,3 +413,7 @@ MainWindow
 - `demuxer-cache-state.seekable-ranges`：可 seek 缓存区间，用于进度条灰色段；
 - `cache-pause` / `cache-pause-wait` / `cache-pause-initial`：缓存不足自动暂停策略；
 - `demuxer-readahead-secs`：预读时长。
+
+
+- libmpv 缓存目标：`EMBYQT_MPV_CACHE_SECS`（默认 60 秒，范围 5–3600）；
+  `cache-buffering-state=100%` 表示达到该目标，而不是下载完整影片。

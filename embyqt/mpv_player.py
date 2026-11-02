@@ -46,6 +46,12 @@ class MpvEngine(QObject):
         super().__init__(parent)
         if not MPV_AVAILABLE:
             raise RuntimeError(f"未安装 libmpv：{_MPV_IMPORT_ERROR}")
+        try:
+            cache_secs = int(os.environ.get("EMBYQT_MPV_CACHE_SECS", "60"))
+        except ValueError:
+            cache_secs = 60
+        cache_secs = max(5, min(3600, cache_secs))
+        self.cache_secs = cache_secs
         self._mpv = mpv.MPV(
             vo="libmpv",
             gpu_api="opengl",
@@ -57,12 +63,12 @@ class MpvEngine(QObject):
             input_default_bindings=False,
             input_vo_keyboard=False,
             cache="yes",
-            cache_secs=60,
+            cache_secs=cache_secs,
             cache_pause=True,
             cache_pause_wait=5,
             cache_pause_initial=True,
             demuxer_max_bytes=512 * 1024 * 1024,
-            demuxer_readahead_secs=60,
+            demuxer_readahead_secs=cache_secs,
             network_timeout=30,
         )
         self._render = None

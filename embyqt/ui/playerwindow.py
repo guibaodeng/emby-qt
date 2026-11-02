@@ -1294,7 +1294,7 @@ class PlayerWindow(QWidget):
             parts = [f"{state}%"]
             if ahead >= 500:
                 parts.append(self._buffer_text(ahead).replace("缓冲 ", ""))
-            self.controls.set_buffer("缓冲 " + " · ".join(parts))
+            self.controls.set_buffer("缓存 " + " · ".join(parts))
             return
         if not self._using_proxy:
             self.controls.seek.clear_buffered()

@@ -960,10 +960,10 @@ class PlayerWindow(QWidget):
         self.status_label.setGeometry(rect)
         if not self.controls.isVisible():
             self.controls.show()
-        self.controls.raise_()
-        self.status_label.raise_()
         if hasattr(self, "bottom_band") and self.bottom_band.isVisible():
             self.bottom_band.raise_()
+        self.controls.raise_()
+        self.status_label.raise_()
         if hasattr(self, "volume_popup") and self.volume_popup.isVisible():
             self._position_volume_popup()
         if hasattr(self, "volume_popup") and self.volume_popup.isVisible():

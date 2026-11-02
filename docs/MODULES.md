@@ -419,7 +419,7 @@ MainWindow
   - 有限大小：`缓存字节数 / MediaSource.Size * 影片时长`；
   - `不限`：使用整部影片时长；
   - 大小未知时回退 `EMBYQT_MPV_CACHE_SECS`；
-  - `cache-buffering-state=100%` 表示达到该目标，而不是下载完整影片。
+  - `cache-buffering-state=100%` 只表示 mpv 认为缓存状态健康，不代表缓存目标已填满；界面改为显示“当前缓存 / 目标缓存”时长。
 
 
 - 设置页「缓冲大小」写入 `player/cache_bytes`，映射到 libmpv `demuxer-max-bytes`；

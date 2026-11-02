@@ -1295,6 +1295,13 @@ class PlayerWindow(QWidget):
                 self._reporter.progress(ms_to_ticks(time_ms), volume=self.volume)
 
     @staticmethod
+    def _duration_text(ms: int) -> str:
+        seconds = max(0, int(ms / 1000))
+        if seconds >= 3600:
+            return f"{seconds // 3600}:{seconds % 3600 // 60:02d}:{seconds % 60:02d}"
+        return f"{seconds // 60}:{seconds % 60:02d}"
+
+    @staticmethod
     def _buffer_text(ahead_ms: int) -> str:
         ahead = max(0.0, ahead_ms / 1000.0)
         if ahead >= 60:
@@ -1314,12 +1321,11 @@ class PlayerWindow(QWidget):
             # demuxer-cache-duration 给出缓存时长。
             ranges = self._engine.buffered_ranges()
             self.controls.seek.set_buffered_ranges(ranges)
-            state = self._engine.cache_buffering_state()
             ahead = self._engine.buffer_ahead_ms()
-            parts = [f"{state}%"]
-            if ahead >= 500:
-                parts.append(self._buffer_text(ahead).replace("缓冲 ", ""))
-            self.controls.set_buffer("缓存 " + " · ".join(parts))
+            target = max(0, int(getattr(self._engine, "cache_secs", 60))) * 1000
+            self.controls.set_buffer(
+                f"缓存 {self._duration_text(ahead)} / {self._duration_text(target)}"
+            )
             return
         if not self._using_proxy:
             self.controls.seek.clear_buffered()

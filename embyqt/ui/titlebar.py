@@ -6,7 +6,7 @@ import sys
 from typing import Optional
 
 from PySide6.QtCore import QPoint, QPointF, QRectF, Qt, Signal
-from PySide6.QtGui import QColor, QIcon, QPainter, QPen
+from PySide6.QtGui import QColor, QIcon, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QWidget
 
 from . import theme
@@ -74,16 +74,29 @@ class WindowControlButton(QPushButton):
             if mac:
                 half = 3.0
                 if self._restore:
-                    painter.drawRect(QRectF(cx - half - 0.8, cy - half - 0.8, half * 2, half * 2))
-                    painter.drawRect(QRectF(cx - half + 0.8, cy - half + 0.8, half * 2, half * 2))
+                    back = QRectF(cx - half + 0.8, cy - half - 0.8, half * 2, half * 2)
+                    front = QRectF(cx - half - 0.8, cy - half + 0.8, half * 2, half * 2)
+                    back_path = QPainterPath()
+                    back_path.addRect(back)
+                    front_path = QPainterPath()
+                    front_path.addRect(front)
+                    painter.drawPath(back_path.subtracted(front_path))
+                    painter.drawRect(front)
                 else:
                     painter.drawLine(QPointF(cx - half, cy), QPointF(cx + half, cy))
                     painter.drawLine(QPointF(cx, cy - half), QPointF(cx, cy + half))
             else:
                 half = 4.4
                 if self._restore:
-                    painter.drawRect(QRectF(cx - half - 1.0, cy - half - 1.0, half * 2, half * 2))
-                    painter.drawRect(QRectF(cx - half + 1.0, cy - half + 1.0, half * 2, half * 2))
+                    # 后层在右上，前层在左下，与前层重叠的部分不画。
+                    back = QRectF(cx - half + 1.0, cy - half - 1.0, half * 2, half * 2)
+                    front = QRectF(cx - half - 1.0, cy - half + 1.0, half * 2, half * 2)
+                    back_path = QPainterPath()
+                    back_path.addRect(back)
+                    front_path = QPainterPath()
+                    front_path.addRect(front)
+                    painter.drawPath(back_path.subtracted(front_path))
+                    painter.drawRect(front)
                 else:
                     painter.drawRect(QRectF(cx - half, cy - half, half * 2, half * 2))
 

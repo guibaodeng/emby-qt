@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=EmbyQt
+GenericName=Emby Client
+Comment=Emby media center client
+Comment[zh_CN]=Emby 媒体客户端
+Exec=/opt/EmbyQt/EmbyQt
+TryExec=/opt/EmbyQt/EmbyQt
+Icon=/opt/EmbyQt/embyqt.png
+Terminal=false
+Categories=AudioVideo;Video;Player;
+Keywords=Emby;Media;Player;
+StartupNotify=true
+StartupWMClass=EmbyQt

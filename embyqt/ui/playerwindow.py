@@ -324,15 +324,6 @@ class ProgressSlider(QSlider):
                         radius,
                         radius,
                     )
-                # 缓冲很小时主条会被手柄遮住；在轨道上方再画一段真实比例的细线
-                if end_pct > played_pct and start_pct <= played_pct + 0.5:
-                    ahead_start = max(start_x, played_x)
-                    if end_x > ahead_start:
-                        painter.drawRoundedRect(
-                            QRectF(ahead_start, 1.0, end_x - ahead_start, 2.0),
-                            1.0,
-                            1.0,
-                        )
 
         painter.setBrush(QColor(theme.ACCENT))
         painter.drawRoundedRect(QRectF(left, top, played_width, bar_height), radius, radius)

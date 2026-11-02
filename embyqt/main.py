@@ -3,9 +3,17 @@
 from __future__ import annotations
 
 import ctypes
+import locale
 import os
 import sys
 from typing import Optional
+
+# libmpv/FFmpeg 要求 LC_NUMERIC=C；必须在导入 mpv/创建 MPV 之前设置
+os.environ["LC_NUMERIC"] = "C"
+try:
+    locale.setlocale(locale.LC_NUMERIC, "C")
+except locale.Error:
+    pass
 
 from PySide6.QtWidgets import QApplication, QDialog
 

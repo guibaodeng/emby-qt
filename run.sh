@@ -4,6 +4,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}"
+# libmpv 要求数字 locale 为 C
+export LC_NUMERIC=C
 
 # 系统若缺少 libxcb-cursor0，使用随仓库附带的一份，保证 Qt xcb 后端可用
 if [ -d "$ROOT/vendor/lib" ]; then

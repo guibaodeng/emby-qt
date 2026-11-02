@@ -3,9 +3,17 @@
 from __future__ import annotations
 
 import ctypes
+import locale
 import os
 import sys
 from typing import List, Optional
+
+# libmpv/FFmpeg 会检查环境和进程 locale；两者都固定为 C
+os.environ["LC_NUMERIC"] = "C"
+try:
+    locale.setlocale(locale.LC_NUMERIC, "C")
+except locale.Error:
+    pass
 
 from PySide6.QtCore import QObject, QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QOpenGLContext, QPainterPath, QRegion

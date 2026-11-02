@@ -168,14 +168,13 @@ class SettingsPage(QWidget):
         cache_button.clicked.connect(self._clear_cache)
         buttons.addWidget(cache_button)
 
-        # relogin_button = make_button("重新登录")
-        # relogin_button.clicked.connect(self.relogin_requested)
-        # buttons.addWidget(relogin_button)
-        #
-        # logout_button = make_button("退出登录")
-        # logout_button.clicked.connect(self.logout_requested)
-        # buttons.addWidget(logout_button)
+        relogin_button = make_button("重新登录")
+        relogin_button.clicked.connect(self.relogin_requested)
+        buttons.addWidget(relogin_button)
 
+        logout_button = make_button("退出登录")
+        logout_button.clicked.connect(self.logout_requested)
+        buttons.addWidget(logout_button)
         buttons.addStretch(1)
         root.addLayout(buttons)
 

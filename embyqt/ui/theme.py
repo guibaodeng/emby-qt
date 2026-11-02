@@ -436,9 +436,7 @@ QPushButton#rowNav {{
     color: {p['text']};
     border: 1px solid {p['border']};
     border-radius: 22px;
-    font-size: 28px;
-    font-weight: 600;
-    padding: 0 0 2px 0;
+    padding: 0;
 }}
 QPushButton#rowNav:hover {{
     background: {p['accent']};

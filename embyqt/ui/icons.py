@@ -31,6 +31,7 @@ _SVG_FILES = {
     "check": "check.svg",
     "uncheck": "uncheck.svg",
     "arrow_back": "arrow_back.svg",
+    "arrow_forward": "arrow_forward.svg",
     "info": "info.svg",
     "settings": "settings.svg",
     "logout": "logout.svg",

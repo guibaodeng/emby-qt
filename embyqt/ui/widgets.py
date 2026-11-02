@@ -538,6 +538,33 @@ class HScrollArea(QScrollArea):
         event.ignore()
 
 
+class RowNavButton(QPushButton):
+    """横向列表的左右翻页按钮，使用 SVG 图标保证几何居中。"""
+
+    def __init__(self, icon_name: str, parent: Optional[QWidget] = None) -> None:
+        super().__init__("", parent)
+        self._icon_name = icon_name
+        self._hovered = False
+        self.setFixedSize(44, 44)
+        self.setIconSize(QSize(20, 20))
+        theme.signals.changed.connect(self._refresh_icon)
+        self._refresh_icon()
+
+    def _refresh_icon(self) -> None:
+        color = theme.ON_ACCENT if self._hovered else theme.TEXT
+        self.setIcon(icon(self._icon_name, 20, color))
+
+    def enterEvent(self, event) -> None:  # noqa: N802
+        self._hovered = True
+        self._refresh_icon()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event) -> None:  # noqa: N802
+        self._hovered = False
+        self._refresh_icon()
+        super().leaveEvent(event)
+
+
 class PosterRow(QWidget):
     """带标题的横向海报列表。
 
@@ -590,14 +617,13 @@ class PosterRow(QWidget):
         self.scroll.setWidget(self._content)
         layout.addWidget(self.scroll)
 
-        self.nav_left = QPushButton("‹", self.scroll)
-        self.nav_right = QPushButton("›", self.scroll)
+        self.nav_left = RowNavButton("arrow_back", self.scroll)
+        self.nav_right = RowNavButton("arrow_forward", self.scroll)
         for button, direction, tip in (
             (self.nav_left, -1, "向左"),
             (self.nav_right, 1, "向右"),
         ):
             button.setObjectName("rowNav")
-            button.setFixedSize(44, 44)
             button.setCursor(Qt.CursorShape.PointingHandCursor)
             button.setToolTip(f"{tip}浏览")
             button.clicked.connect(lambda _checked=False, d=direction: self._scroll_by(d))

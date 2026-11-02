@@ -380,12 +380,6 @@ class MpvVideoSurface(QOpenGLWidget):
         self._ensure_context()
 
     def paintGL(self) -> None:  # noqa: N802
-        # 首帧/加载阶段也要输出不透明黑色，避免 Wayland 下露出桌面。
-        ctx = QOpenGLContext.currentContext()
-        if ctx is not None:
-            functions = ctx.functions()
-            functions.glClearColor(0.0, 0.0, 0.0, 1.0)
-            functions.glClear(0x4000)  # GL_COLOR_BUFFER_BIT
         if self._engine is None:
             return
         dpr = self.devicePixelRatioF()

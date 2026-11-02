@@ -840,7 +840,9 @@ class PlayerWindow(QWidget):
     # ---- UI -------------------------------------------------------------
     def _build_ui(self) -> None:
         self.container = QWidget(self)
-        self.container.setStyleSheet("background: transparent;")
+        self.container.setObjectName("videoCanvas")
+        # 只给视频画布上黑色，避免 QSS 的背景色级联到控制栏/加载文字。
+        self.container.setStyleSheet("QWidget#videoCanvas { background: #000000; }")
 
         self._outer = QVBoxLayout(self)
         self._outer.setContentsMargins(0, 0, 0, 0)

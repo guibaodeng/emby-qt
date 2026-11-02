@@ -86,7 +86,7 @@ class Sidebar(QFrame):
         brand = QHBoxLayout()
         brand.setSpacing(10)
         logo = QLabel()
-        logo.setPixmap(app_icon(52).pixmap(52, 52))
+        logo.setPixmap(app_icon(64).pixmap(64, 64))
         brand.addWidget(logo)
         brand_text = QVBoxLayout()
         brand_text.setSpacing(0)

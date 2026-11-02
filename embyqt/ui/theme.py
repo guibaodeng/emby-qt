@@ -322,8 +322,11 @@ QPushButton#userMenuItem {{
     background: transparent;
     border: none;
     border-radius: 6px;
-    text-align: left;
-    padding: 4px 12px 4px 12px;
+    padding: 0;
+}}
+QLabel#userMenuText {{
+    background: transparent;
+    color: {p['text']};
     font-size: 13px;
 }}
 QPushButton#userMenuItem:hover {{

@@ -27,7 +27,7 @@ def app_icon(size: int = 256) -> QIcon:
     path = QPainterPath()
     path.addRoundedRect(rect.adjusted(2, 2, -2, -2), size * 0.22, size * 0.22)
     gradient = QLinearGradient(0, 0, size, size)
-    gradient.setColorAt(0.0, QColor("#5ec95a"))
+    gradient.setColorAt(0.0, QColor("#63c65b"))
     gradient.setColorAt(1.0, QColor("#2f7a2b"))
     painter.fillPath(path, gradient)
 

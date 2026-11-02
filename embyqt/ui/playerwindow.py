@@ -747,6 +747,8 @@ class ControlBar(QFrame):
             QPushButton#iconButton {{
                 background: transparent;
                 border: none;
+                border-radius: 18px;
+                padding: 0;
             }}
             QPushButton#iconButton:hover {{
                 background: {hover};

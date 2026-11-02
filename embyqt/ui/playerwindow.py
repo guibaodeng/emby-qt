@@ -1068,7 +1068,9 @@ class PlayerWindow(QWidget):
             if self._engine is None:
                 try:
                     self._engine = MpvEngine(
-                        self, cache_bytes=self.ctx.config.mpv_cache_bytes
+                        self,
+                        cache_bytes=self.ctx.config.mpv_cache_bytes,
+                        cache_secs=self._mpv_cache_seconds(source),
                     )
                 except Exception as exc:  # noqa: BLE001
                     self._on_error(str(exc))
@@ -1156,6 +1158,11 @@ class PlayerWindow(QWidget):
         expected_size = int((self._media_source or {}).get("Size") or 0)
         self.ctx.proxy.begin_playback(self.item.get("Id", ""), expected_size)
         self.controls.seek.clear_buffered()
+        if self._backend == "mpv" and self._engine is not None:
+            self._engine.update_cache(
+                self.ctx.config.mpv_cache_bytes,
+                self._mpv_cache_seconds(self._media_source),
+            )
         self._speed_last_time = None
         self._speed_last_bytes = 0
         self._speed_value = 0.0
@@ -1216,6 +1223,22 @@ class PlayerWindow(QWidget):
         self.setWindowTitle(f"播放 · {self._title_text()}")
         if hasattr(self, "title_bar"):
             self.title_bar.set_title(self._title_text())
+
+    def _mpv_cache_seconds(self, source: Optional[dict] = None) -> int:
+        """缓冲时长 = 配置字节数 / 影片大小 * 影片时长；不限时缓存整部影片。"""
+        source = source or self._media_source or {}
+        cache_bytes = self.ctx.config.mpv_cache_bytes
+        size = int(source.get("Size") or 0)
+        ticks = int(self.item.get("RunTimeTicks") or 0)
+        duration = ticks / TICKS if ticks else self._duration_ms / 1000.0
+        if cache_bytes <= 0:
+            if duration > 0:
+                return max(60, min(86400, int(duration)))
+            return int(os.environ.get("EMBYQT_MPV_CACHE_SECS", "3600"))
+        if size > 0 and duration > 0:
+            seconds = int(cache_bytes * duration / size)
+            return max(15, min(86400, seconds))
+        return int(os.environ.get("EMBYQT_MPV_CACHE_SECS", "60"))
 
     # ---- 定时刷新 -------------------------------------------------------
     def _tick(self) -> None:

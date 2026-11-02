@@ -42,15 +42,21 @@ class MpvEngine(QObject):
     ended = Signal()
     failed = Signal(str)
 
-    def __init__(self, parent=None, cache_bytes: Optional[int] = None) -> None:
+    def __init__(
+        self,
+        parent=None,
+        cache_bytes: Optional[int] = None,
+        cache_secs: Optional[int] = None,
+    ) -> None:
         super().__init__(parent)
         if not MPV_AVAILABLE:
             raise RuntimeError(f"未安装 libmpv：{_MPV_IMPORT_ERROR}")
-        try:
-            cache_secs = int(os.environ.get("EMBYQT_MPV_CACHE_SECS", "60"))
-        except ValueError:
-            cache_secs = 60
-        cache_secs = max(5, min(3600, cache_secs))
+        if cache_secs is None:
+            try:
+                cache_secs = int(os.environ.get("EMBYQT_MPV_CACHE_SECS", "60"))
+            except ValueError:
+                cache_secs = 60
+        cache_secs = max(5, min(86400, int(cache_secs)))
         self.cache_secs = cache_secs
         if cache_bytes is None:
             cache_bytes = 500 * 1024 ** 2
@@ -98,6 +104,17 @@ class MpvEngine(QObject):
         return self._mpv
 
     # ---- 渲染 -----------------------------------------------------------
+    def update_cache(self, cache_bytes: int, cache_secs: int) -> None:
+        """按文件大小/时长重新设置缓存目标（播放前调用）。"""
+        self.cache_bytes = max(0, int(cache_bytes))
+        self.cache_secs = max(5, min(86400, int(cache_secs)))
+        try:
+            self._mpv.demuxer_max_bytes = self.cache_bytes
+            self._mpv.cache_secs = self.cache_secs
+            self._mpv.demuxer_readahead_secs = self.cache_secs
+        except Exception:  # noqa: BLE001
+            pass
+
     def create_render_context(self, get_proc, update_cb) -> None:
         if self._render is not None:
             return

@@ -332,6 +332,58 @@ class ProgressSlider(QSlider):
         painter.drawEllipse(QPointF(left + played_width, height / 2.0), 6, 6)
 
 
+class CornerCap(QWidget):
+    """遮住视频/GL 表面在底部圆角外露的像素。"""
+
+    def __init__(self, side: str, parent=None) -> None:
+        super().__init__(parent)
+        self._side = side
+        self._video_mode = False
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+        self.setFixedSize(24, 24)
+
+    def set_video_mode(self, video: bool) -> None:
+        self._video_mode = bool(video)
+        self.update()
+
+    def _path(self) -> QPainterPath:
+        rect = QRectF(self.rect())
+        radius = 16.0
+        path = QPainterPath()
+        if self._side == "left":
+            path.moveTo(rect.topLeft())
+            path.lineTo(rect.topRight())
+            path.lineTo(rect.bottomRight())
+            path.lineTo(rect.left() + radius, rect.bottom())
+            path.quadTo(rect.left(), rect.bottom(), rect.left(), rect.bottom() - radius)
+        else:
+            path.moveTo(rect.topLeft())
+            path.lineTo(rect.topRight())
+            path.lineTo(rect.right(), rect.bottom() - radius)
+            path.quadTo(rect.right(), rect.bottom(), rect.right() - radius, rect.bottom())
+            path.lineTo(rect.bottomLeft())
+        path.closeSubpath()
+        return path
+
+    def resizeEvent(self, event) -> None:  # noqa: N802
+        super().resizeEvent(event)
+        self.setMask(QRegion(self._path().toFillPolygon().toPolygon()))
+
+    def paintEvent(self, event) -> None:  # noqa: N802
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+        painter.setPen(Qt.PenStyle.NoPen)
+        if self._video_mode:
+            color = QColor("#000000")
+        elif theme.SCHEME == "light":
+            # 与控制栏 rgba(242,245,250,0.84) 叠在黑色视频上的效果一致
+            color = QColor(203, 206, 210)
+        else:
+            color = QColor(9, 12, 16)
+        painter.setBrush(color)
+        painter.drawPath(self._path())
+
+
 class PauseOverlay(QWidget):
     """暂停时显示在画面正中的半透明暂停图标。"""
 
@@ -851,6 +903,11 @@ class PlayerWindow(QWidget):
             self.status_label.setAttribute(Qt.WidgetAttribute.WA_NativeWindow, True)
         self.status_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
 
+        self.corner_left = CornerCap("left", self)
+        self.corner_right = CornerCap("right", self)
+        self.corner_left.hide()
+        self.corner_right.hide()
+
         self._update_title()
 
     def resizeEvent(self, event) -> None:  # noqa: N802
@@ -901,6 +958,12 @@ class PlayerWindow(QWidget):
             self.controls.show()
         self.controls.raise_()
         self.status_label.raise_()
+        if hasattr(self, "corner_left"):
+            cap = 24
+            self.corner_left.setGeometry(0, self.height() - cap, cap, cap)
+            self.corner_right.setGeometry(self.width() - cap, self.height() - cap, cap, cap)
+            self.corner_left.raise_()
+            self.corner_right.raise_()
         if hasattr(self, "volume_popup") and self.volume_popup.isVisible():
             self._position_volume_popup()
         if hasattr(self, "volume_popup") and self.volume_popup.isVisible():
@@ -1561,6 +1624,11 @@ class PlayerWindow(QWidget):
         self.video.set_corner_radius(0 if flat else 16)
         self.controls.set_rounded(not flat)
         self.controls.update_fullscreen_icon(fullscreen)
+        if hasattr(self, "corner_left"):
+            self.corner_left.setVisible(not flat)
+            self.corner_right.setVisible(not flat)
+            self.corner_left.set_video_mode(not self._controls_visible)
+            self.corner_right.set_video_mode(not self._controls_visible)
         for handle in self._handles:
             handle.setVisible(not flat)
         if hasattr(self, "_hide_timer"):
@@ -1600,6 +1668,9 @@ class PlayerWindow(QWidget):
             self.controls.show()
             self.controls.raise_()
         self._controls_visible = True
+        if hasattr(self, "corner_left"):
+            self.corner_left.set_video_mode(False)
+            self.corner_right.set_video_mode(False)
         self._hide_timer.setInterval(2600 if self.isFullScreen() else 10_000)
         if self._engine is not None and self._engine.is_playing() and not self._seeking:
             self._hide_timer.start()
@@ -1616,6 +1687,13 @@ class PlayerWindow(QWidget):
                 self.volume_popup.hide()
             self.controls.hide()
             self._controls_visible = False
+            if hasattr(self, "corner_left"):
+                self.corner_left.set_video_mode(True)
+                self.corner_right.set_video_mode(True)
+                self.corner_left.show()
+                self.corner_right.show()
+                self.corner_left.raise_()
+                self.corner_right.raise_()
 
     # ---- 音轨 / 字幕 ----------------------------------------------------
     def show_subtitle_menu(self) -> None:

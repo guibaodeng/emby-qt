@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -21,12 +21,14 @@ from .. import __version__, logging_setup
 from ..async_task import run_async
 from ..context import AppContext
 from . import theme
+from .icons import icon
 from .widgets import make_button, set_wheel_mode
 
 
 class SettingsPage(QWidget):
     logout_requested = Signal()
     relogin_requested = Signal()
+    back_requested = Signal()
 
     def __init__(self, ctx: AppContext, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
@@ -39,9 +41,18 @@ class SettingsPage(QWidget):
         root.setContentsMargins(30, 24, 30, 30)
         root.setSpacing(18)
 
+        header = QHBoxLayout()
+        header.setSpacing(10)
+        self.back_button = make_button("返回", "secondary")
+        self.back_button.setIcon(icon("arrow_back", 18, theme.TEXT))
+        self.back_button.setIconSize(QSize(18, 18))
+        self.back_button.clicked.connect(self.back_requested)
+        header.addWidget(self.back_button)
         title = QLabel("设置")
         title.setObjectName("pageTitle")
-        root.addWidget(title)
+        header.addWidget(title)
+        header.addStretch(1)
+        root.addLayout(header)
 
         card = QFrame()
         card.setObjectName("card")

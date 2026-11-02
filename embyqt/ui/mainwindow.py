@@ -253,6 +253,7 @@ class MainWindow(QMainWindow):
         self._detail_pages: List[DetailPage] = []
         self._player: Optional[PlayerWindow] = None
         self._current_key = "home"
+        self._settings_back_key = "home"
         self._views_retries = 0
         self._expiring = False
 
@@ -389,6 +390,7 @@ class MainWindow(QMainWindow):
             page = SettingsPage(self.ctx)
             page.logout_requested.connect(self._on_logout)
             page.relogin_requested.connect(self._on_logout)
+            page.back_requested.connect(self._close_settings)
         elif key.startswith("lib:"):
             view_id = key.split(":", 1)[1]
             view = next((v for v in self._views if str(v.get("Id")) == view_id), None)
@@ -406,6 +408,8 @@ class MainWindow(QMainWindow):
 
     def _on_navigate(self, key: str, data: object) -> None:
         get_logger("ui").info("切换页面：%s", key)
+        if key == "settings" and self._current_key != "settings":
+            self._settings_back_key = self._current_key or "home"
         page = self._ensure_page(key)
         self.stack.setCurrentWidget(page)
         self._current_key = key
@@ -415,6 +419,14 @@ class MainWindow(QMainWindow):
             self.sidebar.check(key)
         if key == "search" and isinstance(page, SearchPage):
             page.focus_search()
+
+    def _close_settings(self) -> None:
+        key = self._settings_back_key or "home"
+        if key == "settings":
+            key = "home"
+        if key not in self._pages and not key.startswith("lib:"):
+            key = "home"
+        self._on_navigate(key, None)
 
     def _load_views(self) -> None:
         run_async(

@@ -78,7 +78,7 @@ class LoginDialog(QDialog):
         root.setSpacing(14)
 
         logo = QLabel()
-        logo.setPixmap(app_icon(56).pixmap(56, 56))
+        logo.setPixmap(app_icon(76).pixmap(76, 76))
         logo.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         root.addWidget(logo)
 

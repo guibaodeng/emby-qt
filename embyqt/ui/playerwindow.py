@@ -332,15 +332,15 @@ class ProgressSlider(QSlider):
         painter.drawEllipse(QPointF(left + played_width, height / 2.0), 6, 6)
 
 
-class CornerCap(QWidget):
-    """遮住视频/GL 表面在底部圆角外露的像素。"""
+class BottomBand(QWidget):
+    """视频底部的圆角填充带：让 QOpenGLWidget 不接触窗口底部两个角。"""
 
-    def __init__(self, side: str, parent=None) -> None:
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self._side = side
         self._video_mode = False
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
-        self.setFixedSize(24, 24)
+        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground, True)
+        self.setFixedHeight(20)
 
     def set_video_mode(self, video: bool) -> None:
         self._video_mode = bool(video)
@@ -350,18 +350,12 @@ class CornerCap(QWidget):
         rect = QRectF(self.rect())
         radius = 16.0
         path = QPainterPath()
-        if self._side == "left":
-            path.moveTo(rect.topLeft())
-            path.lineTo(rect.topRight())
-            path.lineTo(rect.bottomRight())
-            path.lineTo(rect.left() + radius, rect.bottom())
-            path.quadTo(rect.left(), rect.bottom(), rect.left(), rect.bottom() - radius)
-        else:
-            path.moveTo(rect.topLeft())
-            path.lineTo(rect.topRight())
-            path.lineTo(rect.right(), rect.bottom() - radius)
-            path.quadTo(rect.right(), rect.bottom(), rect.right() - radius, rect.bottom())
-            path.lineTo(rect.bottomLeft())
+        path.moveTo(rect.topLeft())
+        path.lineTo(rect.topRight())
+        path.lineTo(rect.right(), rect.bottom() - radius)
+        path.quadTo(rect.right(), rect.bottom(), rect.right() - radius, rect.bottom())
+        path.lineTo(rect.left() + radius, rect.bottom())
+        path.quadTo(rect.left(), rect.bottom(), rect.left(), rect.bottom() - radius)
         path.closeSubpath()
         return path
 
@@ -376,7 +370,6 @@ class CornerCap(QWidget):
         if self._video_mode:
             color = QColor("#000000")
         elif theme.SCHEME == "light":
-            # 与控制栏 rgba(242,245,250,0.84) 叠在黑色视频上的效果一致
             color = QColor(203, 206, 210)
         else:
             color = QColor(9, 12, 16)
@@ -874,6 +867,8 @@ class PlayerWindow(QWidget):
             self.video = MpvVideoSurface(self.container)
         else:
             self.video = VideoSurface(self.container, native=self._native_video)
+        self.bottom_band = BottomBand(self.container)
+        self.bottom_band.hide()
         self.pause_overlay = PauseOverlay(self.container)
         self.pause_overlay.hide()
         self.loading_overlay = LoadingOverlay(self.container)
@@ -903,11 +898,6 @@ class PlayerWindow(QWidget):
             self.status_label.setAttribute(Qt.WidgetAttribute.WA_NativeWindow, True)
         self.status_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
 
-        self.corner_left = CornerCap("left", self)
-        self.corner_right = CornerCap("right", self)
-        self.corner_left.hide()
-        self.corner_right.hide()
-
         self._update_title()
 
     def resizeEvent(self, event) -> None:  # noqa: N802
@@ -930,11 +920,23 @@ class PlayerWindow(QWidget):
         rect = self.container.rect()
         if rect.width() <= 0 or rect.height() <= 0:
             return
+        flat = self.isFullScreen() or self.isMaximized()
         video_rect = QRect(rect)
-        if self._native_video and not (self.isFullScreen() or self.isMaximized()):
+        if self._native_video and not flat:
             # 原生视频窗口不参与 Qt 圆角裁剪：底部让出 20px，由控制栏覆盖
             video_rect.setHeight(max(1, video_rect.height() - 20))
+        elif self._backend == "mpv" and not flat:
+            # QOpenGLWidget 在部分 Wayland 合成器上不受圆角裁剪，
+            # 直接让视频离开窗口底边，底部由 BottomBand 填充。
+            video_rect.setHeight(max(1, video_rect.height() - 20))
         self.video.setGeometry(video_rect)
+        if hasattr(self, "bottom_band"):
+            if self._backend == "mpv" and not flat:
+                self.bottom_band.setGeometry(0, rect.height() - 20, rect.width(), 20)
+                self.bottom_band.set_video_mode(not self._controls_visible)
+                self.bottom_band.show()
+            else:
+                self.bottom_band.hide()
         overlay_size = 160
         self.pause_overlay.setGeometry(
             (rect.width() - overlay_size) // 2,
@@ -958,12 +960,8 @@ class PlayerWindow(QWidget):
             self.controls.show()
         self.controls.raise_()
         self.status_label.raise_()
-        if hasattr(self, "corner_left"):
-            cap = 24
-            self.corner_left.setGeometry(0, self.height() - cap, cap, cap)
-            self.corner_right.setGeometry(self.width() - cap, self.height() - cap, cap, cap)
-            self.corner_left.raise_()
-            self.corner_right.raise_()
+        if hasattr(self, "bottom_band") and self.bottom_band.isVisible():
+            self.bottom_band.raise_()
         if hasattr(self, "volume_popup") and self.volume_popup.isVisible():
             self._position_volume_popup()
         if hasattr(self, "volume_popup") and self.volume_popup.isVisible():
@@ -1621,14 +1619,13 @@ class PlayerWindow(QWidget):
         self.player_frame.update()
         self.title_bar.setVisible(not fullscreen)
         self.title_bar.set_maximized(maximized)
-        self.video.set_corner_radius(0 if flat else 16)
+        # mpv 视频不接触窗口底边，由 BottomBand 负责底部圆角；
+        # 避免 QOpenGLWidget 自身 mask 露出父窗口底色。
+        self.video.set_corner_radius(0 if (flat or self._backend == "mpv") else 16)
         self.controls.set_rounded(not flat)
         self.controls.update_fullscreen_icon(fullscreen)
-        if hasattr(self, "corner_left"):
-            self.corner_left.setVisible(not flat)
-            self.corner_right.setVisible(not flat)
-            self.corner_left.set_video_mode(not self._controls_visible)
-            self.corner_right.set_video_mode(not self._controls_visible)
+        if hasattr(self, "bottom_band"):
+            self.bottom_band.set_video_mode(not self._controls_visible)
         for handle in self._handles:
             handle.setVisible(not flat)
         if hasattr(self, "_hide_timer"):
@@ -1668,9 +1665,8 @@ class PlayerWindow(QWidget):
             self.controls.show()
             self.controls.raise_()
         self._controls_visible = True
-        if hasattr(self, "corner_left"):
-            self.corner_left.set_video_mode(False)
-            self.corner_right.set_video_mode(False)
+        if hasattr(self, "bottom_band"):
+            self.bottom_band.set_video_mode(False)
         self._hide_timer.setInterval(2600 if self.isFullScreen() else 10_000)
         if self._engine is not None and self._engine.is_playing() and not self._seeking:
             self._hide_timer.start()
@@ -1687,13 +1683,8 @@ class PlayerWindow(QWidget):
                 self.volume_popup.hide()
             self.controls.hide()
             self._controls_visible = False
-            if hasattr(self, "corner_left"):
-                self.corner_left.set_video_mode(True)
-                self.corner_right.set_video_mode(True)
-                self.corner_left.show()
-                self.corner_right.show()
-                self.corner_left.raise_()
-                self.corner_right.raise_()
+            if hasattr(self, "bottom_band"):
+                self.bottom_band.set_video_mode(True)
 
     # ---- 音轨 / 字幕 ----------------------------------------------------
     def show_subtitle_menu(self) -> None:

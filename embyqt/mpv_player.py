@@ -334,7 +334,7 @@ class MpvVideoSurface(QOpenGLWidget):
         self._engine: Optional[MpvEngine] = None
         self._proc = None
         self._has_frame = False
-        self._corner_radius = 16
+        self._corner_radius = 0
         self._pressed = False
         self._pending_click_ratio = 0.0
         self._suppress_next_click = False

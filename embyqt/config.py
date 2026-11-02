@@ -91,6 +91,21 @@ class Config:
         self._s.setValue("ui/wheel_mode", value if value in ("page", "row") else "page")
 
     @property
+    def mpv_cache_bytes(self) -> int:
+        """libmpv demuxer-max-bytes；0 表示不限。"""
+        value = self._s.value("player/cache_bytes", 500 * 1024 ** 2, type=int)
+        allowed = (0, 100 * 1024 ** 2, 500 * 1024 ** 2, 1024 ** 3, 2 * 1024 ** 3)
+        return value if value in allowed else 500 * 1024 ** 2
+
+    @mpv_cache_bytes.setter
+    def mpv_cache_bytes(self, value: int) -> None:
+        value = int(value)
+        allowed = (0, 100 * 1024 ** 2, 500 * 1024 ** 2, 1024 ** 3, 2 * 1024 ** 3)
+        self._s.setValue(
+            "player/cache_bytes", value if value in allowed else 500 * 1024 ** 2
+        )
+
+    @property
     def logging_enabled(self) -> bool:
         return self._s.value("logging/enabled", True, type=bool)
 

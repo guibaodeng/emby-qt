@@ -417,3 +417,7 @@ MainWindow
 
 - libmpv 缓存目标：`EMBYQT_MPV_CACHE_SECS`（默认 60 秒，范围 5–3600）；
   `cache-buffering-state=100%` 表示达到该目标，而不是下载完整影片。
+
+
+- 设置页「缓冲大小」写入 `player/cache_bytes`，映射到 libmpv `demuxer-max-bytes`；
+  0 表示不限，下次打开播放器时生效。

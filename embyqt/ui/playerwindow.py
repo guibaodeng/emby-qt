@@ -1067,7 +1067,9 @@ class PlayerWindow(QWidget):
                 return
             if self._engine is None:
                 try:
-                    self._engine = MpvEngine(self)
+                    self._engine = MpvEngine(
+                        self, cache_bytes=self.ctx.config.mpv_cache_bytes
+                    )
                 except Exception as exc:  # noqa: BLE001
                     self._on_error(str(exc))
                     return

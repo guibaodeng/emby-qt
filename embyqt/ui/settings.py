@@ -122,12 +122,30 @@ class SettingsPage(QWidget):
         prefs_grid.addWidget(wheel_name, 3, 0)
         prefs_grid.addWidget(self.wheel_combo, 3, 1)
 
+        buffer_name = QLabel("缓冲大小")
+        buffer_name.setObjectName("settingsName")
+        self.buffer_combo = QComboBox()
+        for label, value in (
+            ("100 M", 100 * 1024 ** 2),
+            ("500 M", 500 * 1024 ** 2),
+            ("1 G", 1024 ** 3),
+            ("2 G", 2 * 1024 ** 3),
+            ("不限", 0),
+        ):
+            self.buffer_combo.addItem(label, value)
+        self.buffer_combo.setCurrentIndex(
+            max(0, self.buffer_combo.findData(self.ctx.config.mpv_cache_bytes))
+        )
+        self.buffer_combo.currentIndexChanged.connect(self._on_buffer_size_changed)
+        prefs_grid.addWidget(buffer_name, 4, 0)
+        prefs_grid.addWidget(self.buffer_combo, 4, 1)
+
         log_path_label = QLabel(logging_setup.log_file_path())
         log_path_label.setObjectName("settingsNote")
         log_path_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         log_path_label.setWordWrap(True)
-        prefs_grid.addWidget(QLabel("日志文件"), 4, 0)
-        prefs_grid.addWidget(log_path_label, 4, 1)
+        prefs_grid.addWidget(QLabel("日志文件"), 5, 0)
+        prefs_grid.addWidget(log_path_label, 5, 1)
         prefs_grid.setColumnStretch(1, 1)
         root.addWidget(prefs)
 
@@ -167,6 +185,10 @@ class SettingsPage(QWidget):
         self.ctx.config.theme = mode
         scheme = theme.apply_preference(QApplication.instance(), mode)
         logging_setup.get_logger("settings").info("主题偏好已切换：%s（当前 %s）", mode, scheme)
+
+    def _on_buffer_size_changed(self) -> None:
+        value = self.buffer_combo.currentData()
+        self.ctx.config.mpv_cache_bytes = int(value if value is not None else 500 * 1024 ** 2)
 
     def _on_wheel_mode_changed(self) -> None:
         mode = self.wheel_combo.currentData() or "page"

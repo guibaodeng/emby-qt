@@ -42,7 +42,7 @@ class MpvEngine(QObject):
     ended = Signal()
     failed = Signal(str)
 
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent=None, cache_bytes: Optional[int] = None) -> None:
         super().__init__(parent)
         if not MPV_AVAILABLE:
             raise RuntimeError(f"未安装 libmpv：{_MPV_IMPORT_ERROR}")
@@ -52,6 +52,9 @@ class MpvEngine(QObject):
             cache_secs = 60
         cache_secs = max(5, min(3600, cache_secs))
         self.cache_secs = cache_secs
+        if cache_bytes is None:
+            cache_bytes = 500 * 1024 ** 2
+        self.cache_bytes = max(0, int(cache_bytes))
         self._mpv = mpv.MPV(
             vo="libmpv",
             gpu_api="opengl",
@@ -67,7 +70,7 @@ class MpvEngine(QObject):
             cache_pause=True,
             cache_pause_wait=5,
             cache_pause_initial=True,
-            demuxer_max_bytes=512 * 1024 * 1024,
+            demuxer_max_bytes=self.cache_bytes,
             demuxer_readahead_secs=cache_secs,
             network_timeout=30,
         )

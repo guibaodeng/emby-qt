@@ -14,7 +14,7 @@
 ### 1.2 认证头（必须）
 
 ```text
-X-Emby-Authorization: MediaBrowser Client="Emby for Android", Device="EmbyQt Desktop", DeviceId="<device-id>", Version="1.1.0", Token="<token>"
+X-Emby-Authorization: MediaBrowser Client="Emby for Android", Device="WhalePlayer Desktop", DeviceId="<device-id>", Version="1.1.0", Token="<token>"
 ```
 
 - `CLIENT_NAME` 必须是服务器白名单放行的名称，代码里是 `"Emby for Android"`；

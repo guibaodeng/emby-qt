@@ -90,7 +90,7 @@ class Sidebar(QFrame):
         brand.addWidget(logo)
         brand_text = QVBoxLayout()
         brand_text.setSpacing(0)
-        name = QLabel("EmbyQt")
+        name = QLabel("WhalePlayer")
         name.setObjectName("brandName")
         brand_text.addWidget(name)
         self.server_label = ElidedLabel("")
@@ -258,7 +258,7 @@ class MainWindow(QMainWindow):
         self._expiring = False
 
         self.setObjectName("mainWindow")
-        self.setWindowTitle("EmbyQt")
+        self.setWindowTitle("WhalePlayer")
         self.setWindowIcon(app_icon())
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Window)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
@@ -282,7 +282,7 @@ class MainWindow(QMainWindow):
         frame_layout.setContentsMargins(0, 0, 0, 0)
         frame_layout.setSpacing(0)
 
-        self.title_bar = TitleBar("EmbyQt", app_icon(), parent=self.frame)
+        self.title_bar = TitleBar("WhalePlayer", app_icon(), parent=self.frame)
         self.title_bar.minimize_requested.connect(self.showMinimized)
         self.title_bar.maximize_requested.connect(self._toggle_maximized)
         self.title_bar.close_requested.connect(self.close)

@@ -23,7 +23,7 @@ ui:    theme / icons / branding / titlebar / frameless / widgets
 
 - 版本号：`__version__ = "1.0.0"`；
 - 客户端标识：`CLIENT_NAME = "Emby for Android"`、`CLIENT_VERSION = "1.1.0"`、
-  `DEVICE_NAME = "EmbyQt Desktop"`、`APP_NAME/ORG_NAME`。
+  `DEVICE_NAME = "WhalePlayer Desktop"`、`APP_NAME/ORG_NAME`；QSettings 使用旧键名兼容登录态。
 - **注意**：`CLIENT_NAME` 是服务器白名单放行的名称，改动会导致所有请求 403；
   `CLIENT_VERSION` 是 Emby 协议里的客户端版本，与 App 版本分开。
 

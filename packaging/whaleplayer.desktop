@@ -1,15 +1,15 @@
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=EmbyQt
+Name=WhalePlayer
 GenericName=Emby Client
 Comment=Emby media center client
 Comment[zh_CN]=Emby 媒体客户端
-Exec=/opt/EmbyQt/EmbyQt
-TryExec=/opt/EmbyQt/EmbyQt
-Icon=/opt/EmbyQt/embyqt.png
+Exec=/opt/WhalePlayer/WhalePlayer
+TryExec=/opt/WhalePlayer/WhalePlayer
+Icon=/opt/WhalePlayer/whaleplayer.png
 Terminal=false
 Categories=AudioVideo;Video;Player;
 Keywords=Emby;Media;Player;
 StartupNotify=true
-StartupWMClass=EmbyQt
+StartupWMClass=WhalePlayer

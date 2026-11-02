@@ -118,14 +118,14 @@ def main() -> int:
         mode = env_mode
     scheme = theme.apply_preference(app, mode)
     log.info(
-        "启动 EmbyQt %s，平台=%s，主题偏好=%s（当前 %s），日志级别=%s",
+        "启动 WhalePlayer %s，平台=%s，主题偏好=%s（当前 %s），日志级别=%s",
         __version__, app.platformName(), mode, scheme, config.logging_level,
     )
-    print(f"[EmbyQt] 显示后端：{app.platformName()}", flush=True)
-    print(f"[EmbyQt] 主题：{'浅色' if scheme == 'light' else '深色'}", flush=True)
+    print(f"[WhalePlayer] 显示后端：{app.platformName()}", flush=True)
+    print(f"[WhalePlayer] 主题：{'浅色' if scheme == 'light' else '深色'}", flush=True)
     if app.platformName() == "xcb" and os.environ.get("WAYLAND_DISPLAY"):
         print(
-            "[EmbyQt] 提示：当前是 Wayland 会话却用了 xcb，"
+            "[WhalePlayer] 提示：当前是 Wayland 会话却用了 xcb，"
             "如果窗口不可见请执行 unset QT_QPA_PLATFORM 后重试",
             flush=True,
         )
@@ -133,7 +133,7 @@ def main() -> int:
     proxy_manager = ProxyManager()
     proxy_config = proxy_manager.current()
     print(
-        f"[EmbyQt] 网络代理：{proxy_config.describe() if proxy_config else '未使用代理'}"
+        f"[WhalePlayer] 网络代理：{proxy_config.describe() if proxy_config else '未使用代理'}"
         "（每次请求前会复查）",
         flush=True,
     )
@@ -142,7 +142,7 @@ def main() -> int:
     while True:
         client = _restore_client(config, proxy_manager)
         if client is None:
-            print("[EmbyQt] 打开登录窗口", flush=True)
+            print("[WhalePlayer] 打开登录窗口", flush=True)
             log.info("打开登录窗口")
             dialog = LoginDialog(config, message=login_message, proxy_manager=proxy_manager)
             login_message = ""
@@ -171,7 +171,7 @@ def main() -> int:
         window.show()
         window.raise_()
         window.activateWindow()
-        print(f"[EmbyQt] 已打开主窗口：{config.server}", flush=True)
+        print(f"[WhalePlayer] 已打开主窗口：{config.server}", flush=True)
         log.info("打开主窗口：%s", config.server)
         result = app.exec()
         proxy.stop()

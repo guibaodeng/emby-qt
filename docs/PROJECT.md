@@ -47,7 +47,7 @@ CLIENT_NAME = "Emby for Android"   # embyqt/__init__.py
 格式（`EmbyClient.authorization_header`）：
 
 ```text
-MediaBrowser Client="Emby for Android", Device="EmbyQt Desktop",
+MediaBrowser Client="Emby for Android", Device="WhalePlayer Desktop",
 DeviceId="<device-id>", Version="1.1.0", Token="<token>"
 ```
 

@@ -1,4 +1,4 @@
-# EmbyQt —— Emby 桌面客户端
+# WhalePlayer —— Emby 桌面客户端
 
 基于 Emby REST API 的 Linux 桌面客户端，PySide6（Qt 6）+ libmpv（保留 libVLC 回退）。
 界面为深色媒体中心风格：侧边栏媒体库、海报墙、详情页、内嵌播放器。
@@ -127,8 +127,8 @@
 
 产物：
 
-- 目录版：`dist/EmbyQt/EmbyQt`
-- 单文件：`dist/EmbyQt`
+- 目录版：`dist/WhalePlayer/WhalePlayer`
+- 单文件：`dist/WhalePlayer`
 
 默认会自动查找系统 `libvlc.so.5`、`libvlccore.so.9`、VLC plugins 和 `libmpv.so.2` 并打入产物；
 `--system-vlc` 可减小 VLC 部分体积，但运行环境需安装 VLC/libVLC。
@@ -137,16 +137,16 @@
 
 已提供：
 
-- `packaging/embyqt.desktop`：`Exec=/opt/EmbyQt/EmbyQt`
-- `packaging/embyqt.png`：256×256 应用图标
+- `packaging/whaleplayer.desktop`：`Exec=/opt/WhalePlayer/WhalePlayer`
+- `packaging/whaleplayer.png`：256×256 应用图标
 
-安装到 `/opt/EmbyQt` 后：
+安装到 `/opt/WhalePlayer` 后：
 
 ```bash
-sudo mkdir -p /opt/EmbyQt
-sudo cp -a dist/EmbyQt/. /opt/EmbyQt/
-sudo cp packaging/embyqt.png /opt/EmbyQt/embyqt.png
-sudo cp packaging/embyqt.desktop /usr/share/applications/embyqt.desktop
+sudo mkdir -p /opt/WhalePlayer
+sudo cp -a dist/WhalePlayer/. /opt/WhalePlayer/
+sudo cp packaging/whaleplayer.png /opt/WhalePlayer/whaleplayer.png
+sudo cp packaging/whaleplayer.desktop /usr/share/applications/whaleplayer.desktop
 sudo update-desktop-database /usr/share/applications
 ```
 
@@ -171,7 +171,7 @@ PYTHONPATH=. QT_QPA_PLATFORM=xcb .venv/bin/python -m embyqt
 ```
 
 首次启动输入服务器地址、用户名、密码即可；成功后 Token 保存在
-`~/.config/EmbyQt/EmbyQt.conf`。退出登录会清除 Token。
+`~/.config/EmbyQt/EmbyQt.conf`（沿用旧设置路径以保留登录态）。退出登录会清除 Token。
 
 可选环境变量：
 
@@ -237,7 +237,7 @@ embyqt/
   - 探测走跨平台标准入口：Linux 环境变量、Windows 注册表、macOS SystemConfiguration，
     Linux 再补充 GNOME（手动/PAC）和 KDE 配置，macOS 再补充 `scutil --proxy` 的 PAC；
   - 每个请求前调用 `current()`，带 2 秒 TTL，兼顾实时性与 gsettings 子进程开销；
-  - 代理变化会打印 `[EmbyQt] 系统代理已变更：...`；
+  - 代理变化会写入代理日志；
   - 使用系统代理时，播放器固定走本机代理（不再直连），避免绕过代理。
 - **播放器**按平台选择渲染方式：
   - X11（`xcb`）：libVLC 通过 `set_xwindow` 直接嵌入原生窗口，控制栏同为原生子窗口；
@@ -276,7 +276,7 @@ Windows 注册表、macOS 系统配置）→ macOS 的 `scutil --proxy`（PAC）
 读到代理后，API、海报、播放流全部使用它；没有读到就直接连接。
 
 代理状态不是只在启动时判断：每个网络请求前都会复查（2 秒缓存），
-中途开关系统代理会自动生效，并打印 `[EmbyQt] 系统代理已变更：...`。
+中途开关系统代理会自动生效。
 可在「设置 → 系统代理」查看实际生效值。
 
 **主题没有跟随系统？**
@@ -289,8 +289,8 @@ Windows 注册表、macOS 系统配置）→ macOS 的 `scutil --proxy`（PAC）
 终端会立即输出：
 
 ```
-[EmbyQt] 显示后端：wayland      # 或 xcb
-[EmbyQt] 已打开主窗口：<服务器>  # 或 [EmbyQt] 打开登录窗口
+[WhalePlayer] 显示后端：wayland      # 或 xcb
+[WhalePlayer] 已打开主窗口：<服务器>  # 或 [WhalePlayer] 打开登录窗口
 ```
 
 窗口是**先创建、再后台校验登录态**的，即使服务器很慢也会马上出界面。

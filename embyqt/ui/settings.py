@@ -160,7 +160,7 @@ class SettingsPage(QWidget):
         self._rows["user"].setText(self.ctx.client.user_name or "—")
         self._refresh_proxy()
         self._rows["device"].setText(self.ctx.config.device_id)
-        self._rows["version"].setText(f"EmbyQt {__version__}")
+        self._rows["version"].setText(f"WhalePlayer {__version__}")
 
         buttons = QHBoxLayout()
         buttons.setSpacing(10)

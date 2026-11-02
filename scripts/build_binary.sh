@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 打包 EmbyQt 为 Linux 可执行文件（PyInstaller）。
+# 打包 WhalePlayer 为 Linux 可执行文件（PyInstaller）。
 #
 # 用法：
 #   ./scripts/build_binary.sh                 # 目录版，自动携带系统 libVLC
@@ -8,14 +8,14 @@
 #   ./scripts/build_binary.sh --help
 #
 # 产物：
-#   目录版：dist/EmbyQt/EmbyQt
-#   单文件：dist/EmbyQt
+#   目录版：dist/WhalePlayer/WhalePlayer
+#   单文件：dist/WhalePlayer
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-APP_NAME="EmbyQt"
+APP_NAME="WhalePlayer"
 PY="$ROOT/.venv/bin/python"
 MODE="onedir"
 VLC_MODE="auto"       # auto | bundle | system
@@ -23,7 +23,7 @@ BUNDLE_VLC=0
 
 usage() {
     cat <<'USAGE'
-打包 EmbyQt 为 Linux 可执行文件（PyInstaller）。
+打包 WhalePlayer 为 Linux 可执行文件（PyInstaller）。
 
 用法：
   ./scripts/build_binary.sh                 # 目录版，自动携带系统 libVLC
@@ -32,8 +32,8 @@ usage() {
   ./scripts/build_binary.sh --help
 
 产物：
-  目录版：dist/EmbyQt/EmbyQt
-  单文件：dist/EmbyQt
+  目录版：dist/WhalePlayer/WhalePlayer
+  单文件：dist/WhalePlayer
 USAGE
     exit 0
 }
@@ -209,12 +209,12 @@ else
 fi
 echo
 mkdir -p "$ROOT/dist"
-cp -f "$ROOT/packaging/embyqt.desktop" "$ROOT/dist/embyqt.desktop"
-cp -f "$ROOT/packaging/embyqt.png" "$ROOT/dist/embyqt.png"
+cp -f "$ROOT/packaging/whaleplayer.desktop" "$ROOT/dist/whaleplayer.desktop"
+cp -f "$ROOT/packaging/whaleplayer.png" "$ROOT/dist/whaleplayer.png"
 echo "==> 打包完成：$OUT"
 echo "运行：$OUT"
-echo "桌面文件：$ROOT/dist/embyqt.desktop（安装后 Exec=/opt/EmbyQt/EmbyQt）"
-echo "图标：$ROOT/dist/embyqt.png"
+echo "桌面文件：$ROOT/dist/whaleplayer.desktop（安装后 Exec=/opt/WhalePlayer/WhalePlayer）"
+echo "图标：$ROOT/dist/whaleplayer.png"
 if [[ "$BUNDLE_VLC" == "0" ]]; then
     echo "提示：目标机器必须安装 VLC/libVLC。"
 fi

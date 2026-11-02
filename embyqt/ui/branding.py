@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QColor, QIcon, QLinearGradient, QPainter, QPainterPath, QPixmap, QPolygonF
 from PySide6.QtCore import QPointF
@@ -9,7 +11,13 @@ from PySide6.QtCore import QPointF
 from . import theme
 
 
+_WHALE_ICON = Path(__file__).resolve().parent.parent / "assets" / "whaleplayer.png"
+
+
 def app_icon(size: int = 256) -> QIcon:
+    if _WHALE_ICON.is_file():
+        return QIcon(str(_WHALE_ICON))
+    # 资源缺失时的绿色占位图标
     pixmap = QPixmap(size, size)
     pixmap.fill(Qt.GlobalColor.transparent)
     painter = QPainter(pixmap)

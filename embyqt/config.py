@@ -6,14 +6,14 @@ import uuid
 
 from PySide6.QtCore import QSettings
 
-from . import APP_NAME, ORG_NAME
+from . import SETTINGS_APP, SETTINGS_ORG
 
 DEFAULT_SERVER = "https://emby.medi4.org"
 
 
 class Config:
     def __init__(self) -> None:
-        self._s = QSettings(ORG_NAME, APP_NAME)
+        self._s = QSettings(SETTINGS_ORG, SETTINGS_APP)
 
     # ---- 基础字段 -------------------------------------------------------
     @property

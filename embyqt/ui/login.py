@@ -43,7 +43,7 @@ class LoginDialog(QDialog):
         self._busy = False
 
         self.setObjectName("loginDialog")
-        self.setWindowTitle("登录 · EmbyQt")
+        self.setWindowTitle("登录 · WhalePlayer")
         self.setWindowIcon(app_icon())
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
@@ -62,7 +62,7 @@ class LoginDialog(QDialog):
         frame_layout.setContentsMargins(0, 0, 0, 0)
         frame_layout.setSpacing(0)
         title_bar = TitleBar(
-            "登录 · EmbyQt",
+            "登录 · WhalePlayer",
             app_icon(),
             show_minimize=False,
             show_maximize=False,
@@ -82,7 +82,7 @@ class LoginDialog(QDialog):
         logo.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         root.addWidget(logo)
 
-        title = QLabel("EmbyQt")
+        title = QLabel("WhalePlayer")
         title.setObjectName("loginTitle")
         title.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         root.addWidget(title)

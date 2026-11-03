@@ -367,13 +367,9 @@ class BottomBand(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         painter.setPen(Qt.PenStyle.NoPen)
-        if self._video_mode:
-            color = QColor("#000000")
-        elif theme.SCHEME == "light":
-            color = QColor(203, 206, 210)
-        else:
-            color = QColor(9, 12, 16)
-        painter.setBrush(color)
+        # 这块始终是视频黑底：控制栏是半透明的，如果这里刷控制栏颜色，
+        # 底部 20px 会叠出明显更浅的一条“留白”。
+        painter.setBrush(QColor("#000000"))
         painter.drawPath(self._path())
 
 

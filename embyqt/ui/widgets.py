@@ -17,6 +17,7 @@ from PySide6.QtCore import (
     Signal,
 )
 from PySide6.QtGui import (
+    QGuiApplication,
     QColor,
     QFont,
     QFontMetrics,
@@ -546,10 +547,11 @@ class RoundedComboBox(QComboBox):
     def showPopup(self) -> None:  # noqa: N802
         # 必须先设置再 show：弹窗原生窗口一旦创建，Wayland 下再设透明
         # 属性可能不会重新配置 alpha surface，四角就会退化成黑色。
+        self.setMaxVisibleItems(max(1, min(self.count(), 30)))
         self._round_popup()
         super().showPopup()
-        QTimer.singleShot(0, self._fill_popup)
-        QTimer.singleShot(120, self._fill_popup)
+        QTimer.singleShot(0, self._fit_popup)
+        QTimer.singleShot(120, self._fit_popup)
 
     def _round_popup(self) -> None:
         popup = self.view().window()
@@ -574,12 +576,25 @@ class RoundedComboBox(QComboBox):
         self.view().viewport().setContentsMargins(0, 0, 0, 0)
         popup.installEventFilter(self)
 
-    def _fill_popup(self) -> None:
+    def _fit_popup(self) -> None:
         popup = self.view().window()
         if popup is None:
             return
+        count = self.view().model().rowCount()
+        if count > 0:
+            row = self.view().sizeHintForRow(0)
+            frame = self.view().frameWidth() * 2
+            desired = row * count + frame + 8
+            screen = self.screen() or QGuiApplication.primaryScreen()
+            limit = 720
+            if screen is not None:
+                limit = max(160, int(screen.availableGeometry().height() * 0.8))
+            popup.resize(popup.width(), min(desired, limit))
         self.view().setGeometry(0, 0, popup.width(), popup.height())
         self.view().raise_()
+
+    def _fill_popup(self) -> None:
+        self._fit_popup()
 
     def eventFilter(self, obj, event) -> bool:  # noqa: N802
         if event.type() == QEvent.Type.Resize and obj is self.view().window():

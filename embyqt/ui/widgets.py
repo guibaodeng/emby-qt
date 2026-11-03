@@ -545,7 +545,7 @@ class RoundedComboBox(QComboBox):
     def showPopup(self) -> None:  # noqa: N802
         # 必须先设置再 show：弹窗原生窗口一旦创建，Wayland 下再设透明
         # 属性可能不会重新配置 alpha surface，四角就会退化成黑色。
-        self.setMaxVisibleItems(max(1, min(self.count(), 30)))
+        self.setMaxVisibleItems(max(1, min(self.count(), 15)))
         self._round_popup()
         super().showPopup()
 

@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
+    QPushButton,
     QScrollArea,
     QVBoxLayout,
     QWidget,
@@ -40,6 +41,34 @@ SORT_OPTIONS = [
     ("评分", "CommunityRating"),
     ("随机", "Random"),
 ]
+
+
+class SortOrderButton(QPushButton):
+    """排序按钮：图标与文字行内居中，固定 4px 间距。"""
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super().__init__("", parent)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        row = QHBoxLayout(self)
+        row.setContentsMargins(12, 0, 12, 0)
+        row.setSpacing(4)
+        row.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.icon_label = QLabel()
+        self.icon_label.setFixedSize(16, 16)
+        self.icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.icon_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+        self.text_label = QLabel("")
+        self.text_label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        self.text_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+        row.addWidget(self.icon_label, 0, Qt.AlignmentFlag.AlignVCenter)
+        row.addWidget(self.text_label, 0, Qt.AlignmentFlag.AlignVCenter)
+
+    def set_state(self, icon_name: str, text: str) -> None:
+        self.icon_label.setPixmap(icon(icon_name, 16, theme.TEXT).pixmap(16, 16))
+        self.text_label.setText(text)
+        self.text_label.setStyleSheet(
+            f"color: {theme.TEXT}; background: transparent; font-size: 13px;"
+        )
 
 
 class LibraryPage(QWidget):
@@ -117,7 +146,7 @@ class LibraryPage(QWidget):
         self.sort_combo.currentIndexChanged.connect(self._on_sort_changed)
         header.addWidget(self.sort_combo)
 
-        self.order_button = make_button("")
+        self.order_button = SortOrderButton()
         self.order_button.setToolTip("切换排序方向")
         self.order_button.clicked.connect(self._toggle_order)
         header.addWidget(self.order_button)
@@ -317,11 +346,10 @@ class LibraryPage(QWidget):
 
     def _update_order_button(self) -> None:
         ascending = self._sort_order == "Ascending"
-        self.order_button.setText("升序" if ascending else "降序")
-        self.order_button.setIcon(
-            icon("arrow_up" if ascending else "arrow_down", 16, theme.TEXT)
+        self.order_button.set_state(
+            "arrow_up" if ascending else "arrow_down",
+            "升序" if ascending else "降序",
         )
-        self.order_button.setIconSize(QSize(16, 16))
 
     def _toggle_order(self) -> None:
         self._sort_order = "Ascending" if self._sort_order == "Descending" else "Descending"

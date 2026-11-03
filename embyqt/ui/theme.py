@@ -473,17 +473,10 @@ QComboBox QAbstractItemView {{
     background: {p['surface_hi']};
     border: 1px solid {p['border']};
     border-radius: 8px;
-    padding: 0;
-    margin: 0;
+    padding: 4px;
     selection-background-color: {p['accent_dark']};
     color: {p['text']};
     outline: none;
-}}
-QComboBoxPrivateContainer {{
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin: 0;
 }}
 QComboBox QAbstractItemView::item {{
     min-height: 28px;

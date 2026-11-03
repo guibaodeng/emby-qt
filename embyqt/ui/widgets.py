@@ -553,20 +553,8 @@ class RoundedComboBox(QComboBox):
         popup.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         popup.setAutoFillBackground(False)
         popup.setStyleSheet(
-            """
-            QComboBoxPrivateContainer {
-                background: transparent;
-                border: none;
-                padding: 0;
-                margin: 0;
-            }
-            """
+            "QComboBoxPrivateContainer { background: transparent; border: none; }"
         )
-        layout = popup.layout()
-        if layout is not None:
-            layout.setContentsMargins(0, 0, 0, 0)
-        self.view().setContentsMargins(0, 0, 0, 0)
-        self.view().viewport().setContentsMargins(0, 0, 0, 0)
 
 
 class RowNavButton(QPushButton):

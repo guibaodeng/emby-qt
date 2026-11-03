@@ -567,7 +567,7 @@ class DetailPage(QWidget):
         return self.header.current_source_id()
 
     def _build_cast(self, item: dict) -> None:
-        people = [p for p in (item.get("People") or []) if p.get("Id")][:16]
+        people = [p for p in (item.get("People") or []) if p.get("Id")]
         if not people:
             return
         while self.cast_layout.count():

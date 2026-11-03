@@ -831,8 +831,9 @@ class PersonCard(QWidget):
 
 
 class PersonRow(QWidget):
-    def __init__(self, ctx: AppContext, people: List[dict], limit: int = 14, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, ctx: AppContext, people: List[dict], limit: int = 0, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
+        self._people = list(people[:limit]) if limit > 0 else list(people)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -848,10 +849,76 @@ class PersonRow(QWidget):
         row = QHBoxLayout(content)
         row.setContentsMargins(0, 0, 8, 0)
         row.setSpacing(14)
-        for person in people[:limit]:
+        for person in self._people:
             row.addWidget(PersonCard(ctx, person))
         row.addStretch(1)
         self.scroll.setWidget(content)
+
+        self.nav_left = RowNavButton("arrow_back", self.scroll)
+        self.nav_right = RowNavButton("arrow_forward", self.scroll)
+        for button, direction, tip in (
+            (self.nav_left, -1, "向左"),
+            (self.nav_right, 1, "向右"),
+        ):
+            button.setObjectName("rowNav")
+            button.setCursor(Qt.CursorShape.PointingHandCursor)
+            button.setToolTip(f"{tip}浏览演职人员")
+            button.clicked.connect(lambda _checked=False, d=direction: self._scroll_by(d))
+            button.hide()
+        self.scroll.horizontalScrollBar().valueChanged.connect(self._update_nav)
+        self.scroll.horizontalScrollBar().rangeChanged.connect(
+            lambda _min, _max: self._update_nav()
+        )
+        self._nav_anim = QPropertyAnimation(
+            self.scroll.horizontalScrollBar(), b"value", self
+        )
+        self._nav_anim.setDuration(240)
+        self._nav_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        QTimer.singleShot(0, self._place_nav)
+        QTimer.singleShot(0, self._update_nav)
+
+    def resizeEvent(self, event) -> None:  # noqa: N802
+        super().resizeEvent(event)
+        self._place_nav()
+        self._update_nav()
+
+    def showEvent(self, event) -> None:  # noqa: N802
+        super().showEvent(event)
+        QTimer.singleShot(0, self._place_nav)
+        QTimer.singleShot(0, self._update_nav)
+
+    def _place_nav(self) -> None:
+        if not hasattr(self, "nav_left"):
+            return
+        size = self.nav_left.width()
+        top = max(0, (88 - size) // 2)
+        self.nav_left.move(8, top)
+        self.nav_right.move(max(8, self.scroll.width() - size - 8), top)
+        self.nav_left.raise_()
+        self.nav_right.raise_()
+
+    def _update_nav(self) -> None:
+        if not hasattr(self, "nav_left"):
+            return
+        bar = self.scroll.horizontalScrollBar()
+        can_scroll = bar.maximum() > 0 and bool(self._people)
+        left = can_scroll and bar.value() > 0
+        right = can_scroll and bar.value() < bar.maximum()
+        self.nav_left.setVisible(left)
+        self.nav_right.setVisible(right)
+        self.nav_left.setEnabled(left)
+        self.nav_right.setEnabled(right)
+
+    def _scroll_by(self, direction: int) -> None:
+        bar = self.scroll.horizontalScrollBar()
+        if bar.maximum() <= 0:
+            return
+        step = max(220, int(self.scroll.viewport().width() * 0.8))
+        target = max(0, min(bar.maximum(), bar.value() + direction * step))
+        self._nav_anim.stop()
+        self._nav_anim.setStartValue(bar.value())
+        self._nav_anim.setEndValue(target)
+        self._nav_anim.start()
 
 
 # ---------------------------------------------------------------------------

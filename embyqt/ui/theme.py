@@ -1,4 +1,4 @@
-"""主题：深色 / 浅色两套调色板，跟随系统并支持运行时切换。"""
+"""主题：深色 / 浅色 / 蓝色三套调色板，跟随系统并支持运行时切换。"""
 
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ DARK: Dict[str, str] = {
     "accent": "#52b54b",
     "accent_hover": "#63c65b",
     "accent_dark": "#2c6b28",
+    "accent_soft": "rgba(82, 181, 75, 0.18)",
     "on_accent": "#071a08",
     "danger": "#e5554e",
     "gold": "#f0b429",
@@ -52,6 +53,7 @@ LIGHT: Dict[str, str] = {
     "accent": "#2f8f3a",
     "accent_hover": "#267a2f",
     "accent_dark": "#bfe3c2",
+    "accent_soft": "rgba(47, 143, 58, 0.16)",
     "on_accent": "#ffffff",
     "danger": "#c23b32",
     "gold": "#a06d00",
@@ -68,6 +70,39 @@ LIGHT: Dict[str, str] = {
     "nav_text": "#3c475a",
     "chip_text": "#3c475a",
     "chip_border": "#d3dae7",
+    "white": "#ffffff",
+}
+
+# 与 WhalePlayer 蓝色图标同色系的深蓝主题
+BLUE: Dict[str, str] = {
+    "bg": "#071a33",
+    "sidebar": "#0a2242",
+    "surface": "#0d2a4f",
+    "surface_hi": "#123763",
+    "surface_hover": "#19457a",
+    "border": "#1e4a7a",
+    "text": "#eef6ff",
+    "text_muted": "#9cb6d9",
+    "accent": "#2f8cff",
+    "accent_hover": "#55a4ff",
+    "accent_dark": "#0b4a94",
+    "accent_soft": "rgba(47, 140, 255, 0.18)",
+    "on_accent": "#ffffff",
+    "danger": "#ff6b6b",
+    "gold": "#ffc857",
+    "scroll": "#234d7d",
+    "scroll_hover": "#35699e",
+    "placeholder_1": "#102b4d",
+    "placeholder_2": "#0a1d36",
+    "placeholder_text": "#426b98",
+    "row_bg": "#0b2444",
+    "row_hover": "#11305a",
+    "row_border": "#1e4a7a",
+    "overlay_bg": "#06162b",
+    "sidebar_divider": "#183a61",
+    "nav_text": "#c2d7f2",
+    "chip_text": "#d8e8ff",
+    "chip_border": "#1e4a7a",
     "white": "#ffffff",
 }
 
@@ -305,7 +340,7 @@ QPushButton#nav:hover {{
     color: {p['text']};
 }}
 QPushButton#nav:checked {{
-    background: rgba(82, 181, 75, 0.18);
+    background: {p['accent_soft']};
     color: {p['text']};
     font-weight: 600;
 }}
@@ -331,7 +366,7 @@ QLabel#userMenuText {{
     font-size: 13px;
 }}
 QPushButton#userMenuItem:hover {{
-    background: rgba(82, 181, 75, 0.18);
+    background: {p['accent_soft']};
 }}
 #userName {{
     font-size: 13px;
@@ -420,7 +455,7 @@ QPushButton#chip:hover {{
     color: {p['text']};
 }}
 QPushButton#chip:checked {{
-    background: rgba(82, 181, 75, 0.18);
+    background: {p['accent_soft']};
     border-color: {p['accent']};
     color: {p['text']};
 }}
@@ -541,7 +576,7 @@ QMenu::item {{
     border-radius: 6px;
 }}
 QMenu::item:selected {{
-    background: rgba(82, 181, 75, 0.18);
+    background: {p['accent_soft']};
     color: {p['text']};
 }}
 QMenu::separator {{
@@ -711,18 +746,27 @@ _apply_globals(DARK)
 STYLESHEET = build_stylesheet(DARK)
 
 
+def _palette_for(name: str):
+    key = str(name).lower()
+    if key == "light":
+        return "light", LIGHT
+    if key == "blue":
+        return "blue", BLUE
+    return "dark", DARK
+
+
 def set_scheme(name: str) -> str:
     global SCHEME, STYLESHEET
-    SCHEME = "light" if str(name).lower() == "light" else "dark"
-    _apply_globals(LIGHT if SCHEME == "light" else DARK)
-    STYLESHEET = build_stylesheet(LIGHT if SCHEME == "light" else DARK)
+    SCHEME, palette = _palette_for(name)
+    _apply_globals(palette)
+    STYLESHEET = build_stylesheet(palette)
     return SCHEME
 
 
 def apply(app, name: str) -> str:
     scheme = set_scheme(name)
     app.setStyleSheet(STYLESHEET)
-    palette = LIGHT if scheme == "light" else DARK
+    _scheme, palette = _palette_for(scheme)
     tip_font = QFont(app.font())
     tip_font.setPixelSize(10)
     QToolTip.setFont(tip_font)
@@ -770,10 +814,10 @@ def _on_color_scheme_changed(app) -> None:
 
 
 def apply_preference(app, mode: str = "system") -> str:
-    """应用主题偏好：dark / light / system。"""
+    """应用主题偏好：dark / light / blue / system。"""
     global PREFERENCE
     value = str(mode or "").lower()
-    PREFERENCE = value if value in ("dark", "light", "system") else "system"
+    PREFERENCE = value if value in ("dark", "light", "blue", "system") else "system"
     scheme = system_scheme(app) if PREFERENCE == "system" else PREFERENCE
     apply(app, scheme)
     _connect_color_scheme(app)
@@ -783,5 +827,5 @@ def apply_preference(app, mode: str = "system") -> str:
 def apply_system(app) -> str:
     """兼容旧入口：环境变量可临时覆盖偏好。"""
     hint = os.environ.get("EMBYQT_THEME", "").strip().lower()
-    mode = hint if hint in ("dark", "light") else "system"
+    mode = hint if hint in ("dark", "light", "blue") else "system"
     return apply_preference(app, mode)

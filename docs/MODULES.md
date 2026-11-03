@@ -40,7 +40,7 @@ ui:    theme / icons / branding / titlebar / frameless / widgets
 - **注意**：
   - 不要在 `main` 的建窗前做同步网络请求（慢服务器会导致“启动无反应”）；
   - 登录过期/退出登录通过 `MainWindow` 信号回到这里，清 session 后再循环；
-  - 主题由 `config.theme` 决定，`EMBYQT_THEME=dark|light|system` 可临时覆盖。
+  - 主题由 `config.theme` 决定，`EMBYQT_THEME=dark|light|blue|system` 可临时覆盖。
 
 ---
 

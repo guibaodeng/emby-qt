@@ -368,7 +368,9 @@ class PosterImage(QWidget):
             diameter = 22.0
             badge = QRectF(rect.width() - diameter - 8, 8, diameter, diameter)
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(QColor(82, 181, 75, 235))
+            badge_color = QColor(theme.ACCENT_COLOR)
+            badge_color.setAlpha(235)
+            painter.setBrush(badge_color)
             painter.drawRoundedRect(badge, diameter / 2, diameter / 2)
             painter.setPen(QColor("#0b1a0c"))
             font = QFont(self.font())

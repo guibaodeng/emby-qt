@@ -69,9 +69,9 @@
   代理状态**每个请求前都会复查**（2 秒 TTL），用户中途开启/关闭系统代理无需重启；
   开始播放和登录时会强制刷新。「设置」页显示当前生效代理，连接失败/超时/代理异常均有中文提示。
 - **缓冲大小**：「设置 → 缓冲大小」可选 100M / 500M / 1G / 2G / 不限（libmpv 下次播放生效）。
-- **主题**：「设置 → 主题」提供 **跟随系统 / 深色 / 浅色** 三档，运行中即时生效并持久化。
+- **主题**：「设置 → 主题」提供 **跟随系统 / 深色 / 浅色 / 蓝色** 四档，运行中即时生效并持久化。
   跟随系统使用 Qt 的 `colorScheme`（Windows/macOS/Linux 原生），无法读取时回退到系统调色板亮度；
-  系统主题变化会自动切换。也可用 `EMBYQT_THEME=dark|light` 临时覆盖。
+  系统主题变化会自动切换。也可用 `EMBYQT_THEME=dark|light|blue` 临时覆盖。
 - **用户菜单**：侧边栏左下角点击用户名弹出「设置 / 退出登录」，设置不再占用侧边栏导航项。
 - **无边框窗口**：隐藏系统标题栏，使用自绘标题栏（可拖动、双击最大化、最小化/关闭/最大化），
   窗口四角统一为 **16px 圆角**；最大化/全屏时自动切平角并铺满屏幕。主窗口、登录框和播放器统一风格，
@@ -176,7 +176,7 @@ PYTHONPATH=. QT_QPA_PLATFORM=xcb .venv/bin/python -m embyqt
 可选环境变量：
 
 ```bash
-EMBYQT_THEME=light|dark     # 强制浅色/深色（默认跟随系统）
+EMBYQT_THEME=light|dark|blue  # 强制浅色/深色/蓝色（默认跟随系统）
 EMBYQT_PROXY=http://host:port  # 强制指定代理；=none 强制直连
 EMBYQT_FORCE_X11=1          # 让界面走 X11（仅在 X11 桌面可用时）
 ```
@@ -281,8 +281,7 @@ Windows 注册表、macOS 系统配置）→ macOS 的 `scutil --proxy`（PAC）
 
 **主题没有跟随系统？**
 
-系统需提供 `colorScheme`（GNOME/KDE 均支持）。也可以用 `EMBYQT_THEME=light`
-或 `EMBYQT_THEME=dark` 强制指定。
+系统需提供 `colorScheme`（GNOME/KDE 均支持）。也可以用 `EMBYQT_THEME=light`、`dark` 或 `blue` 强制指定。
 
 **执行 `./run.sh` 后好像卡住了 / 看不到窗口？**
 

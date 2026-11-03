@@ -1,4 +1,4 @@
-"""主题：深色 / 浅色 / 蓝色三套调色板，跟随系统并支持运行时切换。"""
+"""主题：深色 / 浅色两套调色板，统一使用蓝色强调色。"""
 
 from __future__ import annotations
 
@@ -10,71 +10,6 @@ from PySide6.QtWidgets import QToolTip
 from PySide6.QtGui import QColor, QFont, QPalette
 
 DARK: Dict[str, str] = {
-    "bg": "#0e1116",
-    "sidebar": "#12161e",
-    "surface": "#171c26",
-    "surface_hi": "#1f2531",
-    "surface_hover": "#242c3a",
-    "border": "#262e3d",
-    "text": "#e9edf5",
-    "text_muted": "#8d96a9",
-    "accent": "#52b54b",
-    "accent_hover": "#63c65b",
-    "accent_dark": "#2c6b28",
-    "accent_soft": "rgba(82, 181, 75, 0.18)",
-    "on_accent": "#071a08",
-    "danger": "#e5554e",
-    "gold": "#f0b429",
-    "scroll": "#313a4c",
-    "scroll_hover": "#43506a",
-    "placeholder_1": "#232937",
-    "placeholder_2": "#171b24",
-    "placeholder_text": "#3a4253",
-    "row_bg": "#161b25",
-    "row_hover": "#1b2130",
-    "row_border": "#2e394c",
-    "overlay_bg": "#10141b",
-    "sidebar_divider": "#252c3a",
-    "nav_text": "#b7c0d2",
-    "chip_text": "#c6cddd",
-    "chip_border": "#262e3d",
-    "white": "#ffffff",
-}
-
-LIGHT: Dict[str, str] = {
-    "bg": "#f2f5fa",
-    "sidebar": "#e9eef6",
-    "surface": "#ffffff",
-    "surface_hi": "#eef2f9",
-    "surface_hover": "#e2e8f2",
-    "border": "#d3dae7",
-    "text": "#1a2231",
-    "text_muted": "#5d697d",
-    "accent": "#2f8f3a",
-    "accent_hover": "#267a2f",
-    "accent_dark": "#bfe3c2",
-    "accent_soft": "rgba(47, 143, 58, 0.16)",
-    "on_accent": "#ffffff",
-    "danger": "#c23b32",
-    "gold": "#a06d00",
-    "scroll": "#c3ccdb",
-    "scroll_hover": "#a9b5c9",
-    "placeholder_1": "#e6ebf3",
-    "placeholder_2": "#dbe1ec",
-    "placeholder_text": "#98a3b6",
-    "row_bg": "#ffffff",
-    "row_hover": "#eef2f9",
-    "row_border": "#d3dae7",
-    "overlay_bg": "#f2f5fa",
-    "sidebar_divider": "#d3dae7",
-    "nav_text": "#3c475a",
-    "chip_text": "#3c475a",
-    "chip_border": "#d3dae7",
-    "white": "#ffffff",
-}
-
-# 深色中性背景 + 蓝色强调色（背景与深色模式一致，只换前景色）
-BLUE: Dict[str, str] = {
     "bg": "#0e1116",
     "sidebar": "#12161e",
     "surface": "#171c26",
@@ -103,6 +38,38 @@ BLUE: Dict[str, str] = {
     "nav_text": "#b7c0d2",
     "chip_text": "#c6cddd",
     "chip_border": "#262e3d",
+    "white": "#ffffff",
+}
+
+LIGHT: Dict[str, str] = {
+    "bg": "#f2f5fa",
+    "sidebar": "#e9eef6",
+    "surface": "#ffffff",
+    "surface_hi": "#eef2f9",
+    "surface_hover": "#e2e8f2",
+    "border": "#d3dae7",
+    "text": "#1a2231",
+    "text_muted": "#5d697d",
+    "accent": "#1f6feb",
+    "accent_hover": "#2f8cff",
+    "accent_dark": "#c7dfff",
+    "accent_soft": "rgba(31, 111, 235, 0.14)",
+    "on_accent": "#ffffff",
+    "danger": "#c23b32",
+    "gold": "#a06d00",
+    "scroll": "#c3ccdb",
+    "scroll_hover": "#a9b5c9",
+    "placeholder_1": "#e6ebf3",
+    "placeholder_2": "#dbe1ec",
+    "placeholder_text": "#98a3b6",
+    "row_bg": "#ffffff",
+    "row_hover": "#eef2f9",
+    "row_border": "#d3dae7",
+    "overlay_bg": "#f2f5fa",
+    "sidebar_divider": "#d3dae7",
+    "nav_text": "#3c475a",
+    "chip_text": "#3c475a",
+    "chip_border": "#d3dae7",
     "white": "#ffffff",
 }
 
@@ -750,8 +717,8 @@ def _palette_for(name: str):
     key = str(name).lower()
     if key == "light":
         return "light", LIGHT
-    if key == "blue":
-        return "blue", BLUE
+    if key == "blue":  # 兼容旧配置：蓝色主题已合并进深色模式
+        return "dark", DARK
     return "dark", DARK
 
 
@@ -814,10 +781,12 @@ def _on_color_scheme_changed(app) -> None:
 
 
 def apply_preference(app, mode: str = "system") -> str:
-    """应用主题偏好：dark / light / blue / system。"""
+    """应用主题偏好：dark / light / system。"""
     global PREFERENCE
     value = str(mode or "").lower()
-    PREFERENCE = value if value in ("dark", "light", "blue", "system") else "system"
+    if value == "blue":
+        value = "dark"
+    PREFERENCE = value if value in ("dark", "light", "system") else "system"
     scheme = system_scheme(app) if PREFERENCE == "system" else PREFERENCE
     apply(app, scheme)
     _connect_color_scheme(app)
@@ -827,5 +796,5 @@ def apply_preference(app, mode: str = "system") -> str:
 def apply_system(app) -> str:
     """兼容旧入口：环境变量可临时覆盖偏好。"""
     hint = os.environ.get("EMBYQT_THEME", "").strip().lower()
-    mode = hint if hint in ("dark", "light", "blue") else "system"
+    mode = "dark" if hint == "blue" else (hint if hint in ("dark", "light") else "system")
     return apply_preference(app, mode)

@@ -75,11 +75,14 @@ class Config:
     @property
     def theme(self) -> str:
         value = self._s.value("ui/theme", "system", type=str)
-        return value if value in ("dark", "light", "blue", "system") else "system"
+        if value == "blue":
+            return "dark"
+        return value if value in ("dark", "light", "system") else "system"
 
     @theme.setter
     def theme(self, value: str) -> None:
-        self._s.setValue("ui/theme", value if value in ("dark", "light", "blue", "system") else "system")
+        value = "dark" if str(value).lower() == "blue" else value
+        self._s.setValue("ui/theme", value if value in ("dark", "light", "system") else "system")
 
     @property
     def wheel_mode(self) -> str:

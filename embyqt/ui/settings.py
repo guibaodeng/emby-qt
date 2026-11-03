@@ -102,7 +102,7 @@ class SettingsPage(QWidget):
         theme_name = QLabel("主题")
         theme_name.setObjectName("settingsName")
         self.theme_combo = RoundedComboBox()
-        for label, value in (("跟随系统", "system"), ("深色", "dark"), ("浅色", "light"), ("蓝色", "blue")):
+        for label, value in (("跟随系统", "system"), ("深色", "dark"), ("浅色", "light")):
             self.theme_combo.addItem(label, value)
         self.theme_combo.setCurrentIndex(
             max(0, self.theme_combo.findData(self.ctx.config.theme))

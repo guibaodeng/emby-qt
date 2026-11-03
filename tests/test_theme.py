@@ -22,10 +22,10 @@ class ThemeTests(unittest.TestCase):
         self.assertIn(theme.TEXT, theme.STYLESHEET)
         self.assertIn("QLabel#posterTitle", theme.STYLESHEET)
 
-    def test_blue_palette(self):
+    def test_legacy_blue_maps_to_dark(self):
         theme.set_scheme("blue")
         self.assertEqual(theme.BG, "#0e1116")
-        self.assertEqual(theme.SCHEME, "blue")
+        self.assertEqual(theme.SCHEME, "dark")
         self.assertEqual(theme.ACCENT, "#2f8cff")
         self.assertIn(theme.TEXT, theme.STYLESHEET)
 

@@ -114,7 +114,9 @@ def main() -> int:
 
     mode = config.theme
     env_mode = os.environ.get("EMBYQT_THEME", "").strip().lower()
-    if env_mode in ("dark", "light", "blue", "system"):
+    if env_mode == "blue":  # 兼容旧版本：蓝色主题已并入深色模式
+        env_mode = "dark"
+    if env_mode in ("dark", "light", "system"):
         mode = env_mode
     scheme = theme.apply_preference(app, mode)
     log.info(
@@ -122,7 +124,7 @@ def main() -> int:
         __version__, app.platformName(), mode, scheme, config.logging_level,
     )
     print(f"[WhalePlayer] 显示后端：{app.platformName()}", flush=True)
-    theme_label = {'light': '浅色', 'blue': '蓝色'}.get(scheme, '深色')
+    theme_label = '浅色' if scheme == 'light' else '深色'
     print(f"[WhalePlayer] 主题：{theme_label}", flush=True)
     if app.platformName() == "xcb" and os.environ.get("WAYLAND_DISPLAY"):
         print(

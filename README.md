@@ -322,3 +322,14 @@ EMBYQT_FORCE_X11=1 ./run.sh
 
 播放器控制栏图标来自 **Google Material Symbols Rounded**（Apache License 2.0），
 已内置于 `embyqt/assets/icons/`，许可文本见该目录下的 `LICENSE` 与 `NOTICE`。
+
+
+## 单独打开播放器
+
+不启动主界面，只打开播放器窗口：
+
+```bash
+.venv/bin/python scripts/player_only.py <item_id> [start_seconds]
+```
+
+脚本复用已保存的登录 Token；需要先在 WhalePlayer 中登录过一次。

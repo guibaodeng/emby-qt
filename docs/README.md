@@ -26,7 +26,7 @@ libVLC 内嵌播放、单实例播放器、系统代理自动跟随，面向“�
 
 | 项 | 值 |
 | --- | --- |
-| 包名 / 版本 | `embyqt` / `1.0.0`（`embyqt/__init__.py`） |
+| 包名 / 版本 | `embyqt` / `1.1.0`（`embyqt/__init__.py`） |
 | 入口 | `./run.sh` → `python -m embyqt` → `embyqt/main.py:main()` |
 | UI 框架 | PySide6 6.12（Essentials），Qt 6 |
 | 播放 | python-vlc / libVLC 3（Wayland vmem 渲染，X11 原生嵌入） |

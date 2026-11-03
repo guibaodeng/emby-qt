@@ -22,6 +22,7 @@ DARK: Dict[str, str] = {
     "accent_hover": "#55a4ff",
     "accent_dark": "#0b4a94",
     "accent_soft": "rgba(47, 140, 255, 0.18)",
+    "nav_hover": "rgba(47, 140, 255, 0.12)",
     "on_accent": "#ffffff",
     "danger": "#e5554e",
     "gold": "#f0b429",
@@ -42,34 +43,35 @@ DARK: Dict[str, str] = {
 }
 
 LIGHT: Dict[str, str] = {
-    "bg": "#f2f5fa",
-    "sidebar": "#e9eef6",
+    "bg": "#dbe6f5",
+    "sidebar": "#cfdeef",
     "surface": "#ffffff",
-    "surface_hi": "#eef2f9",
-    "surface_hover": "#e2e8f2",
-    "border": "#d3dae7",
-    "text": "#1a2231",
-    "text_muted": "#5d697d",
+    "surface_hi": "#e8f0fb",
+    "surface_hover": "#c4d6ea",
+    "border": "#b6c8df",
+    "text": "#182a42",
+    "text_muted": "#526987",
     "accent": "#1f6feb",
     "accent_hover": "#2f8cff",
     "accent_dark": "#c7dfff",
     "accent_soft": "rgba(31, 111, 235, 0.14)",
+    "nav_hover": "rgba(31, 111, 235, 0.13)",
     "on_accent": "#ffffff",
     "danger": "#c23b32",
     "gold": "#a06d00",
-    "scroll": "#c3ccdb",
-    "scroll_hover": "#a9b5c9",
-    "placeholder_1": "#e6ebf3",
-    "placeholder_2": "#dbe1ec",
-    "placeholder_text": "#98a3b6",
+    "scroll": "#aebfd5",
+    "scroll_hover": "#91a8c3",
+    "placeholder_1": "#d9e5f4",
+    "placeholder_2": "#cbd9ec",
+    "placeholder_text": "#7d92ac",
     "row_bg": "#ffffff",
-    "row_hover": "#eef2f9",
-    "row_border": "#d3dae7",
-    "overlay_bg": "#f2f5fa",
-    "sidebar_divider": "#d3dae7",
-    "nav_text": "#3c475a",
-    "chip_text": "#3c475a",
-    "chip_border": "#d3dae7",
+    "row_hover": "#e4edf9",
+    "row_border": "#b6c8df",
+    "overlay_bg": "#dbe6f5",
+    "sidebar_divider": "#b9cbe1",
+    "nav_text": "#294563",
+    "chip_text": "#294563",
+    "chip_border": "#b6c8df",
     "white": "#ffffff",
 }
 
@@ -303,7 +305,7 @@ QPushButton#nav {{
     font-size: 13px;
 }}
 QPushButton#nav:hover {{
-    background: {p['surface_hi']};
+    background: {p['nav_hover']};
     color: {p['text']};
 }}
 QPushButton#nav:checked {{

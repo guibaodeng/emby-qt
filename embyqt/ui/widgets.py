@@ -544,8 +544,12 @@ class RoundedComboBox(QComboBox):
     """弹窗本身也按圆角裁剪，避免列表后面露出方形容器。"""
 
     def showPopup(self) -> None:  # noqa: N802
-        super().showPopup()
+        # 必须先设置再 show：弹窗原生窗口一旦创建，Wayland 下再设透明
+        # 属性可能不会重新配置 alpha surface，四角就会退化成黑色。
         self._round_popup()
+        super().showPopup()
+        QTimer.singleShot(0, self._fill_popup)
+        QTimer.singleShot(120, self._fill_popup)
 
     def _round_popup(self) -> None:
         popup = self.view().window()
@@ -569,8 +573,6 @@ class RoundedComboBox(QComboBox):
         self.view().setContentsMargins(0, 0, 0, 0)
         self.view().viewport().setContentsMargins(0, 0, 0, 0)
         popup.installEventFilter(self)
-        QTimer.singleShot(0, self._fill_popup)
-        QTimer.singleShot(120, self._fill_popup)
 
     def _fill_popup(self) -> None:
         popup = self.view().window()

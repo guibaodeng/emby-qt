@@ -64,10 +64,10 @@ class WindowControlButton(QPushButton):
         painter.setBrush(Qt.BrushStyle.NoBrush)
 
         if self._role == "minimize":
-            half = 2.6 if mac else 5.0
+            half = 2.6 if mac else 4.0
             painter.drawLine(QPointF(cx - half, cy), QPointF(cx + half, cy))
         elif self._role == "close":
-            half = 3.0 if mac else 4.3
+            half = 3.0 if mac else 3.3
             painter.drawLine(QPointF(cx - half, cy - half), QPointF(cx + half, cy + half))
             painter.drawLine(QPointF(cx + half, cy - half), QPointF(cx - half, cy + half))
         elif self._role == "maximize":
@@ -92,7 +92,7 @@ class WindowControlButton(QPushButton):
                     painter.drawLine(QPointF(cx - half, cy), QPointF(cx + half, cy))
                     painter.drawLine(QPointF(cx, cy - half), QPointF(cx, cy + half))
             else:
-                half = 4.4
+                half = 3.4
                 if self._restore:
                     # 后层在右上，前层在左下，与前层重叠的部分不画。
                     back = QRectF(cx - half + 1.0, cy - half - 1.0, half * 2, half * 2)

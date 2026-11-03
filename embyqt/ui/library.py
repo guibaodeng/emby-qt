@@ -49,10 +49,12 @@ class SortOrderButton(QPushButton):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__("", parent)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setMinimumWidth(84)
         row = QHBoxLayout(self)
         row.setContentsMargins(12, 0, 12, 0)
         row.setSpacing(4)
         row.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        row.addStretch(1)
         self.icon_label = QLabel()
         self.icon_label.setFixedSize(16, 16)
         self.icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -62,6 +64,7 @@ class SortOrderButton(QPushButton):
         self.text_label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
         row.addWidget(self.icon_label, 0, Qt.AlignmentFlag.AlignVCenter)
         row.addWidget(self.text_label, 0, Qt.AlignmentFlag.AlignVCenter)
+        row.addStretch(1)
 
     def set_state(self, icon_name: str, text: str) -> None:
         self.icon_label.setPixmap(icon(icon_name, 16, theme.TEXT).pixmap(16, 16))

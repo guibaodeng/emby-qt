@@ -153,6 +153,9 @@ class TitleBar(QFrame):
         logo = None
         if icon is not None:
             logo = QLabel()
+            logo.setObjectName("titleBarLogo")
+            logo.setFixedSize(24, 24)
+            logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
             logo.setPixmap(icon.pixmap(18, 18))
             logo.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
 

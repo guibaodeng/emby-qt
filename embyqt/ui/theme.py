@@ -178,6 +178,11 @@ QFrame#playerFrame[flat="true"] {{
     border-radius: 0;
     border: none;
 }}
+QLabel#titleBarLogo {{
+    background: {p['surface_hi']};
+    border: 1px solid {p['border']};
+    border-radius: 6px;
+}}
 QFrame#titleBar {{
     background: {p['sidebar']};
     border-top-left-radius: 16px;

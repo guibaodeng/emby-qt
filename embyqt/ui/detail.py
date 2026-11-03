@@ -25,6 +25,7 @@ from . import theme
 from .icons import icon
 from .widgets import (
     Chip,
+    RoundedComboBox,
     ElidedLabel,
     EpisodeRow,
     EmptyState,
@@ -188,7 +189,7 @@ class DetailHeader(QWidget):
         self.version_label.setObjectName("muted")
         self.version_label.setVisible(False)
         buttons.addWidget(self.version_label)
-        self.version_combo = QComboBox()
+        self.version_combo = RoundedComboBox()
         self.version_combo.setMinimumWidth(230)
         self.version_combo.setVisible(False)
         self.version_combo.currentIndexChanged.connect(self._on_version_changed)
@@ -461,7 +462,7 @@ class DetailPage(QWidget):
         series_layout.setSpacing(12)
         series_header = SectionHeader("剧集")
         series_layout.addWidget(series_header)
-        self._season_combo = QComboBox()
+        self._season_combo = RoundedComboBox()
         self._season_combo.setMaximumWidth(240)
         self._season_combo.currentIndexChanged.connect(self._on_season_changed)
         series_layout.addWidget(self._season_combo)

@@ -25,6 +25,7 @@ from PySide6.QtGui import (
     QPen,
 )
 from PySide6.QtWidgets import (
+    QComboBox,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -536,6 +537,24 @@ class HScrollArea(QScrollArea):
 
         # page 模式：垂直滚轮不消费，交给外层 QScrollArea 上下滚动
         event.ignore()
+
+
+class RoundedComboBox(QComboBox):
+    """弹窗本身也按圆角裁剪，避免列表后面露出方形容器。"""
+
+    def showPopup(self) -> None:  # noqa: N802
+        super().showPopup()
+        self._round_popup()
+
+    def _round_popup(self) -> None:
+        popup = self.view().window()
+        if popup is None:
+            return
+        popup.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        popup.setAutoFillBackground(False)
+        popup.setStyleSheet(
+            "QComboBoxPrivateContainer { background: transparent; border: none; }"
+        )
 
 
 class RowNavButton(QPushButton):

@@ -1148,6 +1148,7 @@ class PlayerWindow(QWidget):
                         self,
                         cache_bytes=self.ctx.config.mpv_cache_bytes,
                         cache_secs=self._mpv_cache_seconds(source),
+                        hwdec=self.ctx.config.mpv_hwdec,
                     )
                 except Exception as exc:  # noqa: BLE001
                     self._on_error(str(exc))

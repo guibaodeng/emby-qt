@@ -91,6 +91,19 @@ class Config:
         self._s.setValue("ui/wheel_mode", value if value in ("page", "row") else "page")
 
     @property
+    def mpv_hwdec(self) -> str:
+        """libmpv 解码方式：no=软件，auto-safe=硬件自动。"""
+        value = self._s.value("player/hwdec", "no", type=str)
+        return value if value in ("no", "auto-safe") else "no"
+
+    @mpv_hwdec.setter
+    def mpv_hwdec(self, value: str) -> None:
+        value = str(value)
+        self._s.setValue(
+            "player/hwdec", value if value in ("no", "auto-safe") else "no"
+        )
+
+    @property
     def mpv_cache_bytes(self) -> int:
         """libmpv demuxer-max-bytes；0 表示不限。"""
         value = self._s.value("player/cache_bytes", 500 * 1024 ** 2, type=int)

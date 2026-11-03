@@ -47,6 +47,7 @@ class MpvEngine(QObject):
         parent=None,
         cache_bytes: Optional[int] = None,
         cache_secs: Optional[int] = None,
+        hwdec: str = "no",
     ) -> None:
         super().__init__(parent)
         if not MPV_AVAILABLE:
@@ -61,10 +62,11 @@ class MpvEngine(QObject):
         if cache_bytes is None:
             cache_bytes = 500 * 1024 ** 2
         self.cache_bytes = max(0, int(cache_bytes))
+        self.hwdec = hwdec if hwdec in ("no", "auto-safe") else "no"
         self._mpv = mpv.MPV(
             vo="libmpv",
             gpu_api="opengl",
-            hwdec="no",
+            hwdec=self.hwdec,
             audio_display="no",
             idle="yes",
             keep_open="no",

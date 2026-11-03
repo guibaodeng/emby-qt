@@ -129,6 +129,18 @@ class SettingsPage(QWidget):
         prefs_grid.addWidget(wheel_name, 3, 0)
         prefs_grid.addWidget(self.wheel_combo, 3, 1)
 
+        decoder_name = QLabel("解码方式")
+        decoder_name.setObjectName("settingsName")
+        self.decoder_combo = RoundedComboBox()
+        self.decoder_combo.addItem("软件解码", "no")
+        self.decoder_combo.addItem("硬件解码（自动）", "auto-safe")
+        self.decoder_combo.setCurrentIndex(
+            max(0, self.decoder_combo.findData(self.ctx.config.mpv_hwdec))
+        )
+        self.decoder_combo.currentIndexChanged.connect(self._on_decoder_changed)
+        prefs_grid.addWidget(decoder_name, 4, 0)
+        prefs_grid.addWidget(self.decoder_combo, 4, 1)
+
         buffer_name = QLabel("缓冲大小")
         buffer_name.setObjectName("settingsName")
         self.buffer_combo = RoundedComboBox()
@@ -144,15 +156,15 @@ class SettingsPage(QWidget):
             max(0, self.buffer_combo.findData(self.ctx.config.mpv_cache_bytes))
         )
         self.buffer_combo.currentIndexChanged.connect(self._on_buffer_size_changed)
-        prefs_grid.addWidget(buffer_name, 4, 0)
-        prefs_grid.addWidget(self.buffer_combo, 4, 1)
+        prefs_grid.addWidget(buffer_name, 5, 0)
+        prefs_grid.addWidget(self.buffer_combo, 5, 1)
 
         log_path_label = QLabel(logging_setup.log_file_path())
         log_path_label.setObjectName("settingsNote")
         log_path_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         log_path_label.setWordWrap(True)
-        prefs_grid.addWidget(QLabel("日志文件"), 5, 0)
-        prefs_grid.addWidget(log_path_label, 5, 1)
+        prefs_grid.addWidget(QLabel("日志文件"), 6, 0)
+        prefs_grid.addWidget(log_path_label, 6, 1)
         prefs_grid.setColumnStretch(1, 1)
         root.addWidget(prefs)
 
@@ -193,6 +205,10 @@ class SettingsPage(QWidget):
         self.ctx.config.theme = mode
         scheme = theme.apply_preference(QApplication.instance(), mode)
         logging_setup.get_logger("settings").info("主题偏好已切换：%s（当前 %s）", mode, scheme)
+
+    def _on_decoder_changed(self) -> None:
+        value = self.decoder_combo.currentData()
+        self.ctx.config.mpv_hwdec = str(value if value is not None else "no")
 
     def _on_buffer_size_changed(self) -> None:
         value = self.buffer_combo.currentData()

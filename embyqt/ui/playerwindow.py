@@ -377,6 +377,19 @@ class BottomBand(QWidget):
         painter.drawPath(self._path())
 
 
+class VideoBackdrop(QWidget):
+    """不透明黑色视频底，避免首帧前露出桌面；自身绘制不受父级透明样式影响。"""
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+        self.setAttribute(Qt.WidgetAttribute.WA_OpaquePaintEvent, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground, True)
+
+    def paintEvent(self, event) -> None:  # noqa: N802
+        painter = QPainter(self)
+        painter.fillRect(self.rect(), QColor("#000000"))
+
+
 class PauseOverlay(QWidget):
     """暂停时显示在画面正中的半透明暂停图标。"""
 
@@ -865,6 +878,9 @@ class PlayerWindow(QWidget):
         root.addWidget(self.container, 1)
         self._handles = create_resize_handles(self)
 
+        # 视频画布背后的不透明黑底：首帧到来前也不会透出桌面。
+        self.video_backdrop = VideoBackdrop(self.container)
+
         if self._backend == "mpv":
             self.video = MpvVideoSurface(self.container)
         else:
@@ -932,6 +948,8 @@ class PlayerWindow(QWidget):
             # 直接让视频离开窗口底边，底部由 BottomBand 填充。
             video_rect.setHeight(max(1, video_rect.height() - 20))
         self.video.setGeometry(video_rect)
+        if hasattr(self, "video_backdrop"):
+            self.video_backdrop.setGeometry(video_rect)
         if hasattr(self, "bottom_band"):
             if self._backend == "mpv" and not flat:
                 self.bottom_band.setGeometry(0, rect.height() - 20, rect.width(), 20)

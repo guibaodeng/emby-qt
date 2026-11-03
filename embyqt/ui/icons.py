@@ -172,6 +172,17 @@ def _draw(name: str, p: QPainter, color: QColor) -> None:
         p.setPen(pen)
         p.drawLine(QPointF(4.5, 10.5), QPointF(8.2, 14.2))
         p.drawLine(QPointF(8.2, 14.2), QPointF(17.5, 5.8))
+    elif name in ("arrow_up", "arrow_down"):
+        pen = QPen(color, 2.0)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+        p.setPen(pen)
+        if name == "arrow_up":
+            p.drawLine(QPointF(5, 13), QPointF(12, 6))
+            p.drawLine(QPointF(12, 6), QPointF(19, 13))
+        else:
+            p.drawLine(QPointF(5, 7), QPointF(12, 14))
+            p.drawLine(QPointF(12, 14), QPointF(19, 7))
     elif name == "uncheck":
         pen = QPen(color, 2.2)
         pen.setCapStyle(Qt.PenCapStyle.RoundCap)

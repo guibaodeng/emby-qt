@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from PySide6.QtCore import QEvent, Qt, QTimer, Signal
+from PySide6.QtCore import QEvent, QSize, Qt, QTimer, Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QFrame,
@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 from ..async_task import run_async
 from ..context import AppContext
 from . import theme
+from .icons import icon
 from .widgets import POSTER_SPACING, EmptyState, FlowLayout, PosterCard, RoundedComboBox, make_button
 
 PAGE_SIZE = 60
@@ -116,10 +117,12 @@ class LibraryPage(QWidget):
         self.sort_combo.currentIndexChanged.connect(self._on_sort_changed)
         header.addWidget(self.sort_combo)
 
-        self.order_button = make_button("↓ 降序" if self._sort_order == "Descending" else "↑ 升序")
+        self.order_button = make_button("")
         self.order_button.setToolTip("切换排序方向")
         self.order_button.clicked.connect(self._toggle_order)
         header.addWidget(self.order_button)
+        self._update_order_button()
+        theme.signals.changed.connect(self._update_order_button)
         root.addLayout(header)
 
         self.scroll = QScrollArea()
@@ -312,9 +315,17 @@ class LibraryPage(QWidget):
         self._sort_by = self.sort_combo.currentData() or "SortName"
         self.load(force=True)
 
+    def _update_order_button(self) -> None:
+        ascending = self._sort_order == "Ascending"
+        self.order_button.setText("升序" if ascending else "降序")
+        self.order_button.setIcon(
+            icon("arrow_up" if ascending else "arrow_down", 16, theme.TEXT)
+        )
+        self.order_button.setIconSize(QSize(16, 16))
+
     def _toggle_order(self) -> None:
         self._sort_order = "Ascending" if self._sort_order == "Descending" else "Descending"
-        self.order_button.setText("↑ 升序" if self._sort_order == "Ascending" else "↓ 降序")
+        self._update_order_button()
         self.load(force=True)
 
     def set_title(self, title: str) -> None:

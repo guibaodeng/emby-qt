@@ -602,7 +602,7 @@ class ControlBar(QFrame):
         self._apply_style()
         self.setMouseTracking(True)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(18, 8, 18, 12)
+        layout.setContentsMargins(18, 8, 18, 4)
         layout.setSpacing(4)
 
         seek_row = QHBoxLayout()
@@ -973,7 +973,7 @@ class PlayerWindow(QWidget):
             loading_height,
         )
         self.loading_overlay.raise_()
-        height = 80
+        height = 72
         self.controls.setGeometry(0, rect.height() - height, rect.width(), height)
         self.status_label.setGeometry(rect)
         if not self.controls.isVisible():

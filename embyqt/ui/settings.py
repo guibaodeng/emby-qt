@@ -22,7 +22,7 @@ from ..async_task import run_async
 from ..context import AppContext
 from . import theme
 from .icons import icon
-from .widgets import make_button, set_wheel_mode
+from .widgets import RoundedComboBox, make_button, set_wheel_mode
 
 
 class SettingsPage(QWidget):
@@ -89,7 +89,7 @@ class SettingsPage(QWidget):
 
         theme_name = QLabel("主题")
         theme_name.setObjectName("settingsName")
-        self.theme_combo = QComboBox()
+        self.theme_combo = RoundedComboBox()
         for label, value in (("跟随系统", "system"), ("深色", "dark"), ("浅色", "light")):
             self.theme_combo.addItem(label, value)
         self.theme_combo.setCurrentIndex(
@@ -109,7 +109,7 @@ class SettingsPage(QWidget):
 
         level_name = QLabel("日志级别")
         level_name.setObjectName("settingsName")
-        self.level_combo = QComboBox()
+        self.level_combo = RoundedComboBox()
         self.level_combo.addItems(["INFO", "DEBUG"])
         self.level_combo.setCurrentText(self.ctx.config.logging_level)
         self.level_combo.setEnabled(self.ctx.config.logging_enabled)
@@ -119,7 +119,7 @@ class SettingsPage(QWidget):
 
         wheel_name = QLabel("鼠标滚轮")
         wheel_name.setObjectName("settingsName")
-        self.wheel_combo = QComboBox()
+        self.wheel_combo = RoundedComboBox()
         self.wheel_combo.addItem("页面上下滚动", "page")
         self.wheel_combo.addItem("分类左右滚动", "row")
         self.wheel_combo.setCurrentIndex(
@@ -131,7 +131,7 @@ class SettingsPage(QWidget):
 
         buffer_name = QLabel("缓冲大小")
         buffer_name.setObjectName("settingsName")
-        self.buffer_combo = QComboBox()
+        self.buffer_combo = RoundedComboBox()
         for label, value in (
             ("100 M", 100 * 1024 ** 2),
             ("500 M", 500 * 1024 ** 2),

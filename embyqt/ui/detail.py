@@ -645,7 +645,7 @@ class DetailPage(QWidget):
         prev_button = make_button("上一页", "chip")
         prev_button.clicked.connect(lambda: self._go_page(self._episode_page - 1))
         layout.addWidget(prev_button)
-        combo = QComboBox()
+        combo = RoundedComboBox()
         combo.setMinimumWidth(120)
         combo.currentIndexChanged.connect(self._on_page_changed)
         layout.addWidget(combo)

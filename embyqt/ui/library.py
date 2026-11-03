@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 from ..async_task import run_async
 from ..context import AppContext
 from . import theme
-from .widgets import POSTER_SPACING, EmptyState, FlowLayout, PosterCard, make_button
+from .widgets import POSTER_SPACING, EmptyState, FlowLayout, PosterCard, RoundedComboBox, make_button
 
 PAGE_SIZE = 60
 
@@ -101,13 +101,13 @@ class LibraryPage(QWidget):
 
         self.genre_combo = None
         if self._show_genre:
-            self.genre_combo = QComboBox()
+            self.genre_combo = RoundedComboBox()
             self.genre_combo.setMinimumWidth(130)
             self.genre_combo.addItem("全部类型", "")
             self.genre_combo.currentIndexChanged.connect(self._on_genre_changed)
             header.addWidget(self.genre_combo)
 
-        self.sort_combo = QComboBox()
+        self.sort_combo = RoundedComboBox()
         self.sort_combo.setMinimumWidth(120)
         for label, value in SORT_OPTIONS:
             self.sort_combo.addItem(label, value)

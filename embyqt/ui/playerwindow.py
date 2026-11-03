@@ -973,7 +973,7 @@ class PlayerWindow(QWidget):
             loading_height,
         )
         self.loading_overlay.raise_()
-        height = 96
+        height = 80
         self.controls.setGeometry(0, rect.height() - height, rect.width(), height)
         self.status_label.setGeometry(rect)
         if not self.controls.isVisible():

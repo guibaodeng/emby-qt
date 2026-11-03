@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -37,7 +38,18 @@ class SettingsPage(QWidget):
         self._load_server_info()
 
     def _build_ui(self) -> None:
-        root = QVBoxLayout(self)
+        # 内容放进滚动区：主窗口被压矮时行高不会被压缩到文字重叠。
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        content = QWidget()
+        scroll.setWidget(content)
+        outer.addWidget(scroll)
+
+        root = QVBoxLayout(content)
         root.setContentsMargins(30, 24, 30, 30)
         root.setSpacing(18)
 

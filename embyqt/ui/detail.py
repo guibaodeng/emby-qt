@@ -7,7 +7,7 @@ import math
 from typing import List, Optional
 
 from PySide6.QtCore import QRectF, QSize, Qt, QTimer, Signal
-from PySide6.QtGui import QColor, QFont, QLinearGradient, QPainter, QPixmap
+from PySide6.QtGui import QColor, QFont, QIcon, QLinearGradient, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QFrame,
@@ -284,11 +284,21 @@ class DetailHeader(QWidget):
             if index >= 0:
                 self.version_combo.setCurrentIndex(index)
         self.version_combo.blockSignals(False)
+        self._update_version_icons()
         multiple = len(self._sources) > 1
         self.version_combo.setVisible(multiple)
         self.version_label.setVisible(multiple)
 
+    def _update_version_icons(self) -> None:
+        current = self.version_combo.currentIndex()
+        for index in range(self.version_combo.count()):
+            self.version_combo.setItemIcon(
+                index,
+                icon("check", 16, theme.ACCENT) if index == current else QIcon(),
+            )
+
     def _on_version_changed(self, _index: int) -> None:
+        self._update_version_icons()
         self._refresh_chips()
         self.version_changed.emit(self.current_source_id())
 

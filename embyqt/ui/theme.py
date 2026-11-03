@@ -478,6 +478,10 @@ QComboBox QAbstractItemView {{
     color: {p['text']};
     outline: none;
 }}
+QComboBox QAbstractItemView::item {{
+    min-height: 28px;
+    padding: 4px 10px;
+}}
 
 /* ---- 滚动条 ---- */
 QScrollArea {{

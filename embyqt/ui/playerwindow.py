@@ -34,7 +34,7 @@ from .branding import app_icon
 from .frameless import create_resize_handles, position_resize_handles
 from .icons import icon
 from .titlebar import TitleBar
-from .widgets import make_button
+from .widgets import RoundedMenu, make_button
 
 
 def _target_video_size(source: dict) -> tuple:
@@ -1707,7 +1707,7 @@ class PlayerWindow(QWidget):
     def show_subtitle_menu(self) -> None:
         if self._engine is None:
             return
-        menu = QMenu(self)
+        menu = RoundedMenu(self)
         current = self._engine.current_subtitle_track()
         menu.addAction("关闭字幕", lambda: self._set_spu(-1))
         menu.addSeparator()
@@ -1753,7 +1753,7 @@ class PlayerWindow(QWidget):
     def show_audio_menu(self) -> None:
         if self._engine is None:
             return
-        menu = QMenu(self)
+        menu = RoundedMenu(self)
         current = self._engine.current_audio_track()
         for track_id, name in self._engine.audio_tracks():
             action = menu.addAction(("✓ " if track_id == current else "    ") + name)

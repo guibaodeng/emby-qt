@@ -37,7 +37,7 @@ from .settings import SettingsPage
 from .frameless import create_resize_handles, position_resize_handles
 from .titlebar import TitleBar
 from ..logging_setup import get_logger
-from .widgets import ElidedLabel, make_button
+from .widgets import ElidedLabel, RoundedMenu, make_button
 
 
 def _is_auth_error(message: str) -> bool:
@@ -194,7 +194,7 @@ class Sidebar(QFrame):
         menu.addAction(action)
 
     def _show_user_menu(self) -> None:
-        menu = QMenu(self)
+        menu = RoundedMenu(self)
         self._add_user_menu_action(
             menu, "settings", "设置", lambda: self.navigate.emit("settings", None)
         )

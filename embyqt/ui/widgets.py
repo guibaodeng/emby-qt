@@ -456,7 +456,7 @@ class PosterCard(QWidget):
         self.activated.emit(self.item)
 
     def _on_context_menu(self, pos: QPoint) -> None:
-        menu = QMenu(self)
+        menu = RoundedMenu(self)
         menu.addAction("▶  播放", lambda: self.play_requested.emit(self.item))
         detail_action = menu.addAction("查看详情", lambda: self.activated.emit(self.item))
         detail_action.setIcon(icon("info", 16, theme.TEXT))
@@ -539,6 +539,14 @@ class HScrollArea(QScrollArea):
 
         # page 模式：垂直滚轮不消费，交给外层 QScrollArea 上下滚动
         event.ignore()
+
+
+class RoundedMenu(QMenu):
+    """透明窗口 QMenu，让 QSS 的圆角外不再露出方形底。"""
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super().__init__(parent)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
 
 
 class RoundedComboBox(QComboBox):

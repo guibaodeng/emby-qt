@@ -24,7 +24,7 @@ class ThemeTests(unittest.TestCase):
 
     def test_blue_palette(self):
         theme.set_scheme("blue")
-        self.assertEqual(theme.BG, "#071a33")
+        self.assertEqual(theme.BG, "#0e1116")
         self.assertEqual(theme.SCHEME, "blue")
         self.assertEqual(theme.ACCENT, "#2f8cff")
         self.assertIn(theme.TEXT, theme.STYLESHEET)

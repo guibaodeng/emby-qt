@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Dict
 
 from PySide6.QtCore import QObject, Qt, Signal
@@ -86,6 +87,10 @@ PLACEHOLDER_1 = PLACEHOLDER_2 = PLACEHOLDER_TEXT = ""
 ROW_BG = ROW_HOVER = ROW_BORDER = OVERLAY_BG = ""
 SCROLL = SCROLL_HOVER = SIDEBAR_DIVIDER = NAV_TEXT = CHIP_TEXT = CHIP_BORDER = ""
 WHITE = ON_ACCENT = ""
+
+_CHECK_ICON = (
+    Path(__file__).resolve().parent.parent / "assets" / "icons" / "check_white.png"
+).as_posix()
 
 FONT_STACK = '"Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", "PingFang SC", "WenQuanYi Micro Hei", sans-serif'
 
@@ -463,6 +468,29 @@ QPushButton#rowNav:disabled {{
 }}
 
 /* ---- 输入 ---- */
+QCheckBox {{
+    color: {p['text']};
+    spacing: 8px;
+}}
+QCheckBox::indicator {{
+    width: 16px;
+    height: 16px;
+    border: 1px solid {p['border']};
+    border-radius: 4px;
+    background: {p['surface']};
+}}
+QCheckBox::indicator:hover {{
+    border-color: {p['accent']};
+}}
+QCheckBox::indicator:checked {{
+    background: {p['accent']};
+    border-color: {p['accent']};
+    image: url("{_CHECK_ICON}");
+}}
+QCheckBox::indicator:disabled {{
+    background: {p['surface_hi']};
+    border-color: {p['border']};
+}}
 QLineEdit, QComboBox {{
     background: {p['surface']};
     border: 1px solid {p['border']};

@@ -380,6 +380,13 @@ class MpvVideoSurface(QOpenGLWidget):
         self._ensure_context()
 
     def paintGL(self) -> None:  # noqa: N802
+        # 首帧前也把 OpenGL 表面清成不透明黑色；只靠父级背景在
+        # Wayland 合成器上仍可能透出主窗口。
+        ctx = QOpenGLContext.currentContext()
+        if ctx is not None:
+            functions = ctx.functions()
+            functions.glClearColor(0.0, 0.0, 0.0, 1.0)
+            functions.glClear(0x4000)  # GL_COLOR_BUFFER_BIT
         if self._engine is None:
             return
         dpr = self.devicePixelRatioF()

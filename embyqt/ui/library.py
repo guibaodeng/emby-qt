@@ -135,13 +135,13 @@ class LibraryPage(QWidget):
         self.genre_combo = None
         if self._show_genre:
             self.genre_combo = RoundedComboBox()
-            self.genre_combo.setMinimumWidth(130)
+            self.genre_combo.setFixedWidth(150)
             self.genre_combo.addItem("全部类型", "")
             self.genre_combo.currentIndexChanged.connect(self._on_genre_changed)
             header.addWidget(self.genre_combo)
 
         self.sort_combo = RoundedComboBox()
-        self.sort_combo.setMinimumWidth(120)
+        self.sort_combo.setFixedWidth(150)
         for label, value in SORT_OPTIONS:
             self.sort_combo.addItem(label, value)
         index = max(0, [v for _l, v in SORT_OPTIONS].index(self._sort_by))

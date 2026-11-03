@@ -6,6 +6,7 @@ from typing import List, Optional
 
 from PySide6.QtCore import (
     QEasingCurve,
+    QEvent,
     QPoint,
     QPropertyAnimation,
     QRect,
@@ -553,8 +554,35 @@ class RoundedComboBox(QComboBox):
         popup.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         popup.setAutoFillBackground(False)
         popup.setStyleSheet(
-            "QComboBoxPrivateContainer { background: transparent; border: none; }"
+            """
+            QComboBoxPrivateContainer {
+                background: transparent;
+                border: none;
+                padding: 0;
+                margin: 0;
+            }
+            """
         )
+        layout = popup.layout()
+        if layout is not None:
+            layout.setContentsMargins(0, 0, 0, 0)
+        self.view().setContentsMargins(0, 0, 0, 0)
+        self.view().viewport().setContentsMargins(0, 0, 0, 0)
+        popup.installEventFilter(self)
+        QTimer.singleShot(0, self._fill_popup)
+        QTimer.singleShot(120, self._fill_popup)
+
+    def _fill_popup(self) -> None:
+        popup = self.view().window()
+        if popup is None:
+            return
+        self.view().setGeometry(0, 0, popup.width(), popup.height())
+        self.view().raise_()
+
+    def eventFilter(self, obj, event) -> bool:  # noqa: N802
+        if event.type() == QEvent.Type.Resize and obj is self.view().window():
+            QTimer.singleShot(0, self._fill_popup)
+        return super().eventFilter(obj, event)
 
 
 class RowNavButton(QPushButton):

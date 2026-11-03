@@ -216,12 +216,13 @@ QPushButton#titleCloseButton:hover {{
 /* Linux：圆形窗口按钮 */
 QPushButton#titleButton[platform="linux"],
 QPushButton#titleCloseButton[platform="linux"] {{
+    background: {p['surface_hi']};
     border-radius: 14px;
     padding: 0;
     font-size: 15px;
 }}
 QPushButton#titleButton[platform="linux"]:hover {{
-    background: {p['surface_hi']};
+    background: {p['surface_hover']};
     color: {p['text']};
 }}
 QPushButton#titleCloseButton[platform="linux"]:hover {{

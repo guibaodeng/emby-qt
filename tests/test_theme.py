@@ -17,7 +17,7 @@ class ThemeTests(unittest.TestCase):
 
     def test_light_palette(self):
         theme.set_scheme("light")
-        self.assertEqual(theme.BG, "#dbe6f5")
+        self.assertEqual(theme.BG, "#e7e8ea")
         self.assertEqual(theme.SCHEME, "light")
         self.assertIn(theme.TEXT, theme.STYLESHEET)
         self.assertIn("QLabel#posterTitle", theme.STYLESHEET)

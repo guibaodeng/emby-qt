@@ -59,7 +59,7 @@ if [[ ! -x "$PY" ]]; then
     echo "未找到 .venv，正在创建..."
     python3 -m venv "$ROOT/.venv"
 fi
-"$PY" -m pip install -q --upgrade pip
+#"$PY" -m pip install -q --upgrade pip
 "$PY" -m pip install -q -r "$ROOT/requirements.txt"
 if ! "$PY" -c "import PyInstaller" >/dev/null 2>&1; then
     echo "==> 安装 PyInstaller"

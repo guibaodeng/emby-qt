@@ -28,6 +28,7 @@ from ..async_task import run_async
 from ..context import AppContext
 from ..logging_setup import get_logger
 from ..player import VLC_AVAILABLE, PlaybackReporter, VlcEngine, ms_to_ticks, vlc_error
+from ..screen_inhibitor import ScreenInhibitor
 from ..mpv_player import MPV_AVAILABLE, MpvEngine, MpvVideoSurface, mpv_error
 from . import theme
 from .branding import app_icon
@@ -831,6 +832,7 @@ class PlayerWindow(QWidget):
         self._using_proxy = self._has_system_proxy
         self._retried_stream = False
         self._controls_visible = True
+        self._screen_inhibitor = ScreenInhibitor()
 
         self._build_ui()
         self._install_shortcuts()
@@ -1107,6 +1109,7 @@ class PlayerWindow(QWidget):
         if hasattr(self, "loading_overlay"):
             self.loading_overlay.hide()
         self.controls.set_speed("")
+        self._screen_inhibitor.release()
         self.status_label.setText(f"无法播放：{message}")
         log.error("播放失败：%s", message)
         self.status_label.show()
@@ -1318,10 +1321,26 @@ class PlayerWindow(QWidget):
             return max(15, min(86400, seconds))
         return int(os.environ.get("EMBYQT_MPV_CACHE_SECS", "60"))
 
+    def _update_screen_inhibitor(self) -> None:
+        if self._engine is None or self._closing or self._error_shown:
+            self._screen_inhibitor.release()
+            return
+        try:
+            playing = self._engine.is_playing()
+            buffering = bool(getattr(self._engine, "paused_for_cache", lambda: False)())
+        except Exception:  # noqa: BLE001
+            playing = buffering = False
+        if playing or buffering:
+            self._screen_inhibitor.acquire()
+        else:
+            self._screen_inhibitor.release()
+
     # ---- 定时刷新 -------------------------------------------------------
     def _tick(self) -> None:
         if self._engine is None:
+            self._screen_inhibitor.release()
             return
+        self._update_screen_inhibitor()
         time_ms = self._engine.time_ms()
         length = self._engine.length_ms()
         if length > 0:
@@ -1805,6 +1824,7 @@ class PlayerWindow(QWidget):
     # ---- 关闭 -----------------------------------------------------------
     def closeEvent(self, event) -> None:  # noqa: N802
         self._closing = True
+        self._screen_inhibitor.release()
         self._ui_timer.stop()
         if hasattr(self, "volume_popup"):
             self.volume_popup.hide()
